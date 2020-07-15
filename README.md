@@ -1,24 +1,24 @@
 # YouLoader
 
-Requirements to download music:
-FFMPEG
-Youtube-DL
+#### Requirements for this program to work:
+1) FFMPEG
+2) Youtube-DL
+3) PySide2
 
-How to download/install FFMPEG for Windows 10?
+#### How to download/install FFMPEG for Windows 10?
 
 1) Download FFMPEG -> https://ffmpeg.org/download.html
-Extract it to C:\
-In Search, search for and then select: System (Control Panel)
-Click the Advanced system settings link.
-Click Environment Variables. In the section User Variables, find the PATH environment variable and select it. Click Edit. If the PATH environment variable does not exist, click New.
-Set the path C:\bin\ffmpeg\bin and press OK to everything.
-Open CMD/Git bash and type "ffmpeg" without quotes. If it shows output without any errors then you've installed it successfully.
+2) Extract it to C:\
+3) In Search, search for and then select: Environment Variables
+4) Add path **C:\<extracted_file_name>\bin** and press OK to everything.
+5) Open CMD/Git bash and type "ffmpeg" without quotes. If it doesn't show errors then you've installed it successfully.
 
-How to install Youtube-DL?
-1) Get Python
-2) Use pip to install youtube-dl, command: pip install youtube_dl
+#### How to install Youtube-DL?
+1) Get Python 3.7+ (+ indicating 3.7 or higher)
+2) Use pip to install youtube-dl, **command:** `pip install youtube_dl`
 
-HOW TO DOWNLOAD?
-Get the link by clicking the button "Git clone or download". git clone "link"
-For terminal users: git clone https://github.com/SmileyBoy321/YouLoader.git
-pip install -r requirements.txt (installs requirements to run this program)
+#### How to download the program?
+1) Git clone it or download it as .zip,
+**command:** `git clone https://github.com/SmileyBoy321/YouLoader.git`
+
+![program_img](https://user-images.githubusercontent.com/45132310/87560813-8544f500-c6c4-11ea-95cf-a4aae1fbcdec.PNG)
