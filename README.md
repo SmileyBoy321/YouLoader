@@ -1,24 +1,21 @@
 # YouLoader
 
-Requirements to download music:
+######Requirements to download music:
 1) FFMPEG
 2) Youtube-DL
 
-How to download/install FFMPEG for Windows 10?
+######How to download/install FFMPEG for Windows 10?
 
 1) Download FFMPEG -> https://ffmpeg.org/download.html
-Extract it to C:\
-In Search, search for and then select: System (Control Panel)
-Click the Advanced system settings link.
-Click Environment Variables. In the section User Variables, find the PATH environment variable and select it. Click Edit. If the PATH environment variable does not exist, click New.
-Set the path C:\bin\ffmpeg\bin and press OK to everything.
-Open CMD/Git bash and type "ffmpeg" without quotes. If it shows output without any errors then you've installed it successfully.
+2) Extract it to C:\
+3) In Search, search for and then select: Environment Variables
+4) Add path **C:\<extracted_file_name>\bin** and press OK to everything.
+5) Open CMD/Git bash and type "ffmpeg" without quotes. If it doesn't show errors then you've installed it successfully.
 
-How to install Youtube-DL?
+######How to install Youtube-DL?
 1) Get Python
 2) Use pip to install youtube-dl, command: pip install youtube_dl
 
-HOW TO DOWNLOAD?
-Get the link by clicking the button "Git clone or download". git clone "link"
-For terminal users: git clone https://github.com/SmileyBoy321/YouLoader.git
-pip install -r requirements.txt (installs requirements to run this program)
+######How to download the program?
+1) Git clone it or download it as .zip
+command: git clone https://github.com/SmileyBoy321/YouLoader.git
