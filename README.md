@@ -1,8 +1,8 @@
 # YouLoader
 
 Requirements to download music:
-FFMPEG
-Youtube-DL
+1) FFMPEG
+2) Youtube-DL
 
 How to download/install FFMPEG for Windows 10?
 
