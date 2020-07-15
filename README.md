@@ -18,5 +18,5 @@
 2) Use pip to install youtube-dl, **command:** `pip install youtube_dl`
 
 #### How to download the program?
-1) Git clone it or download it as .zip
+1) Git clone it or download it as .zip,
 **command:** `git clone https://github.com/SmileyBoy321/YouLoader.git`
