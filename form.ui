@@ -2,12 +2,15 @@
 <ui version="4.0">
  <class>GUI</class>
  <widget class="QWidget" name="GUI">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>607</width>
-    <height>204</height>
+    <height>154</height>
    </rect>
   </property>
   <property name="font">
@@ -18,6 +21,10 @@
   </property>
   <property name="windowTitle">
    <string>YouLoader</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="Resource.qrc">
+    <normaloff>:/icon/window_icon.ico</normaloff>:/icon/window_icon.ico</iconset>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
@@ -293,6 +300,8 @@ font: 12pt &quot;Segoe UI&quot;;</string>
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="Resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -11,12 +11,20 @@ from PySide2.QtWidgets import (QApplication, QWidget,
                                )
 from PySide2.QtCore import QFile, QThread, Signal
 from PySide2.QtUiTools import QUiLoader
+from PySide2 import QtXml
+from PySide2.QtWinExtras import QtWin
+from PySide2 import QtGui
+import Resource
+
+myappid = "com.nocompany.YouLoader"
+QtWin.setCurrentProcessExplicitAppUserModelID(myappid)
 
 
 class GUI(QWidget):
     def __init__(self):
         super(GUI, self).__init__()
         self.load_ui()
+        self.setFixedSize(607, 154)
 
         self.dirPath = self.findChild(QLineEdit, "lineEditDir")
         self.downloadURL = self.findChild(QLineEdit, "lineEditURL")
@@ -92,6 +100,7 @@ class Worker(QThread):
 
 if __name__ == "__main__":
     app = QApplication([])
+    app.setWindowIcon(QtGui.QIcon(":/icon/window_icon.ico"))
     widget = GUI()
     widget.show()
     sys.exit(app.exec_())
