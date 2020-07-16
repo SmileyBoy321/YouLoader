@@ -6,7 +6,7 @@
 3) Requirements.txt content
 
 #### How to download the program for (Windows 7-10) users?
-Windows users can download the .exe file here: [releases](https://github.com/SmileyBoy321/YouLoader/releases/download/1.0/YouLoader_Setup.exe)
+Windows users can download the file here: [exe](https://github.com/SmileyBoy321/YouLoader/releases/download/1.0/YouLoader_Setup.exe)
 
 #### How to download the program for (Linux) users?
 1) Git clone it or download it as .zip, .tar, 
