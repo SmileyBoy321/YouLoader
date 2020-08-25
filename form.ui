@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>607</width>
-    <height>154</height>
+    <height>161</height>
    </rect>
   </property>
   <property name="font">
@@ -28,6 +28,9 @@
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
+  </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
   </property>
   <property name="styleSheet">
    <string notr="true">background-color: rgb(33,33,33);</string>
@@ -134,7 +137,7 @@ font: 12pt &quot;Segoe UI&quot;;</string>
     <rect>
      <x>510</x>
      <y>50</y>
-     <width>81</width>
+     <width>84</width>
      <height>23</height>
     </rect>
    </property>
@@ -146,8 +149,7 @@ font: 12pt &quot;Segoe UI&quot;;</string>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color: rgb(66,66,66);
-color: rgb(255, 255, 255);
-</string>
+color: rgb(255, 255, 255);</string>
    </property>
    <property name="text">
     <string>Browse</string>
@@ -170,7 +172,7 @@ color: rgb(255, 255, 255);
     <rect>
      <x>510</x>
      <y>20</y>
-     <width>81</width>
+     <width>84</width>
      <height>23</height>
     </rect>
    </property>
@@ -178,15 +180,13 @@ color: rgb(255, 255, 255);
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
     </font>
    </property>
    <property name="styleSheet">
     <string notr="true">background-color: rgb(66,66,66);
-color: rgb(255, 255, 255);
-
-
-
-</string>
+color: rgb(255, 255, 255);</string>
    </property>
    <property name="text">
     <string>Download</string>
@@ -204,9 +204,9 @@ color: rgb(255, 255, 255);
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>80</y>
-     <width>120</width>
+     <width>101</width>
      <height>61</height>
     </rect>
    </property>
@@ -216,29 +216,32 @@ color: rgb(255, 255, 255);
    <property name="title">
     <string>File Format</string>
    </property>
-   <widget class="QRadioButton" name="mp3">
+   <widget class="QCheckBox" name="PlaylistCheckbox">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>20</x>
       <y>30</y>
-      <width>61</width>
-      <height>17</height>
+      <width>62</width>
+      <height>21</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <family>Segoe UI</family>
-      <pointsize>12</pointsize>
-     </font>
-    </property>
     <property name="styleSheet">
-     <string notr="true">color: rgb(255, 255, 255);</string>
+     <string notr="true">font: 10pt &quot;Segoe UI&quot;;</string>
     </property>
     <property name="text">
-     <string>MP3</string>
+     <string>Playlist</string>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>16</width>
+      <height>16</height>
+     </size>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
+    </property>
+    <property name="tristate">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>
@@ -248,8 +251,8 @@ color: rgb(255, 255, 255);
    </property>
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>90</y>
+     <x>250</x>
+     <y>100</y>
      <width>331</width>
      <height>23</height>
     </rect>
@@ -279,8 +282,8 @@ QProgressBar {
   <widget class="QLabel" name="lblProgressText">
    <property name="geometry">
     <rect>
-     <x>150</x>
-     <y>90</y>
+     <x>140</x>
+     <y>100</y>
      <width>101</width>
      <height>21</height>
     </rect>
