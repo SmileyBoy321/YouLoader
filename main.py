@@ -7,7 +7,7 @@ import os
 from PySide2.QtWidgets import (QApplication, QWidget,
                                QPushButton, QLineEdit,
                                QFileDialog, QLabel,
-                               QProgressBar, QRadioButton
+                               QProgressBar, QCheckBox
                                )
 from PySide2.QtCore import QFile, QThread, Signal
 from PySide2.QtUiTools import QUiLoader
@@ -32,13 +32,16 @@ class GUI(QWidget):
         self.download = self.findChild(QPushButton, "pushButtonDownload")
         self.progressText = self.findChild(QLabel, "lblProgressText")
         self.progressBar = self.findChild(QProgressBar, "progressBar")
-        self.mp3btn = self.findChild(QRadioButton, "mp3")
+        self.playlistCB = self.findChild(QCheckBox, "PlaylistCheckbox")
 
         self.worker = Worker(self)
         self.browse.clicked.connect(self.onBrowseClicked)
         self.worker.updateProgress.connect(self.setProgress)
         self.worker.updateText.connect(self.setText)
         self.download.clicked.connect(self.worker.start)
+        self.playlistCB.clicked.connect(self.on_off)
+
+        self.playlist = None
 
     def load_ui(self):
         loader = QUiLoader()
@@ -61,6 +64,12 @@ class GUI(QWidget):
     def setText(self, str):
         self.progressText.setText(str)
 
+    def on_off(self):
+        if self.playlistCB.isChecked():
+            self.playlist = False
+        else:
+            self.playlist = True
+
 
 class Worker(QThread):
     updateProgress = Signal(float)
@@ -75,7 +84,7 @@ class Worker(QThread):
 
         self.ydl_opts = {
             'format': 'bestaudio/best',
-            'noplaylist': True,
+            'noplaylist': self.main_window.playlist,
             'source_address': '0.0.0.0',
             'progress_hooks': [self.my_hook],
             'postprocessors': [{
