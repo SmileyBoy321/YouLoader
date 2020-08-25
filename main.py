@@ -100,6 +100,7 @@ class Worker(QThread):
         if download["status"] == "finished":
             print("Finished")
             self.main_window.progressText.setText("Ready")
+            self.main_window.downloadURL.clear()
         if download["status"] == "downloading":
             self.updateText.emit("Downloading...")
             percent = download["_percent_str"]
