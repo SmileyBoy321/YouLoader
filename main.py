@@ -11,7 +11,8 @@ import Resources
 
 class SystemTrayIcon:
     def __init__(self):
-        self.tray = QSystemTrayIcon(QIcon(":/icons/icon.ico"))
+        self.icon = QIcon(":/icons/icon.ico")
+        self.tray = QSystemTrayIcon(self.icon)
         self.tray.show()
         self.tray.activated.connect(self.right_or_left_click)
 
