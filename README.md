@@ -6,11 +6,14 @@
 3) Requirements.txt content
 
 #### How to download the program for (Windows 7-10) users?
-Windows users can download the file here: [exe](https://github.com/SmileyBoy321/YouLoader/releases/download/1.0/YouLoader_Setup.exe)
+Windows users can download the file here: [YouLoader.exe](https://github.com/SmileyBoy321/YouLoader/releases/download/1.1/Install_YouLoader.exe)
 
 #### How to download the program for (Linux) users?
 1) Git clone it or download it as .zip, .tar, 
 **command:** `git clone https://github.com/SmileyBoy321/YouLoader.git`
 2) Install requirements, **command:** `pip install -r requirements.txt`
 
-![test](https://user-images.githubusercontent.com/45132310/91154494-42fed280-e6ca-11ea-8211-8ede23868ada.PNG)
+#### How does this program work?
+1) Copy YouTube url link you want to download as music
+2) Click on YouLoader.exe program or run YouLoader.py if you have Python
+3) Program checks if "youtube.com" is in your copied URL. If that results to true then it will show you file directory to download the music to. If that results to false then nothing happens.
