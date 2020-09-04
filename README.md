@@ -3,7 +3,7 @@
 #### Requirements for this program to work:
 1) FFMPEG
 2) Youtube-DL
-3) Requirements.txt content
+3) Requirements.txt content [For Python users]
 
 #### How to download the program for (Windows 7-10) users?
 Windows users can download the file here: [YouLoader.exe](https://github.com/SmileyBoy321/YouLoader/releases/download/1.1/Install_YouLoader.exe)
