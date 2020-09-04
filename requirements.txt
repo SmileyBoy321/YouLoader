@@ -1,2 +1,3 @@
 pyperclip
+win10toast
 youtube-dl
