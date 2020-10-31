@@ -6,7 +6,7 @@
 3) Requirements.txt content [For Python users]
 
 #### How to download the program for (Windows 7-10) users?
-Windows users can download the file here: [YouLoader.exe](https://github.com/SmileyBoy321/YouLoader/releases/download/1.1/Install_YouLoader.exe)
+Windows users can download the file here: [YouLoader.exe](https://github.com/SmileyBoy321/YouLoader/releases/download/1.0/YouLoader_Install.exe)
 
 #### How to download the program for (Linux) users?
 1) Git clone it or download it as .zip, .tar, 
