@@ -16,4 +16,4 @@ Windows users can download the file here: [YouLoader.exe](https://github.com/Smi
 #### How does this program work?
 1) Copy YouTube url link you want to download as music
 2) Click on YouLoader.exe program or run YouLoader.py if you have Python
-3) Program checks if "youtube.com" is in your copied URL. If that results to true then it will show you file directory to download the music to. If that results to false then nothing happens.
+3) Program checks if "youtube.com" is in your copied URL. If that results to true then it will create a music directory on your Desktop unless it exists. If it exists then it downloads mp3 inside the music directory.
