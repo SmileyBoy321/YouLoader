@@ -13,13 +13,9 @@
 			<img src="{{ url_for('static', filename='youtube_logo.png') }}" alt="YouTube logo" width="55" height="50">
 			<img src="{{ url_for('static', filename='soundcloud_logo.png') }}" alt="SoundCloud logo" width="70" height="50">
 		</div>
-		{% with messages = get_flashed_messages(with_categories=True) %}
-			{% for category, message in messages %}
-				<div class="{{category}}">{{ message }}</div>
-			{% endfor %}
-		{% endwith %}
 		<form action="/download" method="post">
 			<input type="text" name="url_link" id="url_input" placeholder="Paste url here" required autofocus>
+   <h3 id="error">Incorrect or not supported url</h3>
 			<input type="submit" name="download_btn" id="download_button" value="Download">
 		</form>
 		<script src="/static/script.js"></script>
