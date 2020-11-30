@@ -1,2 +1,2 @@
-Flask==1.1.2
-youtube-dl==2020.11.19
+flask
+youtube-dl

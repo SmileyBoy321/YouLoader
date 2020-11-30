@@ -1,3 +1,8 @@
+body {
+	background-color: #263238; 
+	font-family: Roboto;"
+}
+
 #header {
 	color: #455A64;
 	font-size: 100px;
@@ -26,7 +31,7 @@
 	display: flex;
 	text-align: center;
 	margin: auto;
-	width: 30%;
+	width: 600px;
 	height: 30px;
 	font-size: 20px;
 	outline: none;
@@ -44,14 +49,15 @@
 	justify-content: center;
 	align-content: center;
 	margin-top: 5px;
-	width: 7%;
-	height: 4%;
+	width: 140px;
+	height: 40px;
 	font-size: 20px;
 	border-radius: 8px;
 	background-color: #1E88E5;
 	color: white;
 	border: none;
 	outline: none;
+
 }
 
 #download_button:hover {
@@ -60,4 +66,14 @@
 
 #download_button:focus {
 	box-shadow: 0 0 10px rgba(3,155,229 ,1);
+}
+
+.error {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+	margin-bottom: 10px;
+	font-size: 20px;
+	color: red;
 }

@@ -1,6 +1,7 @@
-from flask import Flask, url_for, render_template, request, send_from_directory
+from flask import Flask, url_for, render_template, request, send_from_directory, flash, redirect
 import os
 import youtube_dl
+import logging
 
 # Download music to this path
 MUSIC_FOLDER = "static/music/"
@@ -11,21 +12,22 @@ app = Flask(__name__)
 app.secret_key = b"\xfc\x06Ah\xad\xfc\x8d.O\xc7:\xa6\x02\x90\n\x13"
 
 file_name = None
+logging.basicConfig(level=logging.DEBUG)
 
 
 def my_hook(d):
     global file_name
     if d["status"] == "finished":
         file_name = d["filename"].split("/")[-1].split(".")
-        file_name[1] = "opus"
+        file_name[1] = "mp3"
         file_name = ".".join(file_name)
 
-
+outtmpl = MUSIC_FOLDER + "%(title)s.%(ext)s"
 ydl_opts = {
     "format": "bestaudio/best",
-    "outtmpl": f"{MUSIC_FOLDER}%(title)s.%(ext)s",
+    "outtmpl": outtmpl,
     "noplaylist": True,
-    "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "opus"}],
+    "postprocessors": [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3"}],
     "progress_hooks": [my_hook],
 }
 
@@ -42,21 +44,29 @@ def download():
     global file_name
     text = request.form["url_link"]
     if request.method == "POST":
-        if "youtube.com" in text:
-            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([f"{text}"])
-                for filename in os.listdir(MUSIC_FOLDER):
-                    if filename == file_name:
-                        file_name = filename
-                    else:
-                        os.remove(MUSIC_FOLDER + filename)
-                return send_from_directory(
-                    MUSIC_FOLDER,
-                    file_name,
-                    mimetype="audio/ogg",
-                    attachment_filename=file_name,
-                    as_attachment=True,
-                )
+        if "youtube.com" in text or "soundcloud.com" in text:
+            try:
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([f"{text}"])
+                    for filename in os.listdir(MUSIC_FOLDER):
+                        if filename == file_name:
+                            file_name = filename
+                        else:
+                            os.remove(MUSIC_FOLDER + filename)
+                    return send_from_directory(
+                        MUSIC_FOLDER,
+                        file_name,
+                        mimetype="audio/mpeg",
+                        attachment_filename=file_name,
+                        as_attachment=True,
+                    )
+            except Exception as e:
+                logging.debug(e)
+                flash("Failed to download. Incomplete url or outdated YoutubeDL in the server.", "error")
+                return redirect(url_for("index"))
+        else:
+            flash("Incorrect or not supported url", "error")
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":
