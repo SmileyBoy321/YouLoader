@@ -1,6 +1,6 @@
 body {
 	background-color: #263238; 
-	font-family: Roboto;"
+	font-family: Roboto;
 }
 
 #header {
@@ -68,12 +68,13 @@ body {
 	box-shadow: 0 0 10px rgba(3,155,229 ,1);
 }
 
-.error {
-	display: block;
+#error {
+	display: none;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
 	margin-bottom: 10px;
+	margin-top: 10px;
 	font-size: 20px;
 	color: red;
 }
