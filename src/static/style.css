@@ -36,6 +36,9 @@ body {
 	font-size: 20px;
 	outline: none;
 	border: 2px solid #ccc;
+	border-color: rgb(62, 68, 70);
+	background-color: black;
+	color: rgb(232, 230, 227);
 }
 
 #url_input:focus {
