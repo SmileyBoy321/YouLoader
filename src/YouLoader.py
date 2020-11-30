@@ -62,10 +62,7 @@ def download():
                     )
             except Exception as e:
                 logging.debug(e)
-                flash("Failed to download. Incomplete url or outdated YoutubeDL in the server.", "error")
                 return redirect(url_for("index"))
-        else:
-            flash("Incorrect or not supported url", "error")
     return redirect(url_for("index"))
 
 
