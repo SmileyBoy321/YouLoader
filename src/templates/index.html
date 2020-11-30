@@ -1,3 +1,4 @@
+<!DOCTYPE html5>
 <html lang="en">
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -5,17 +6,22 @@
 		<title>{{ title }}</title>
 		<link rel="stylesheet" type="text/css" href="/static/style.css">
 	</head>
-	<body style="background-color: #263238; font-family: Roboto;">
+	<body>
 		<h1 id="Header">{{ title }}</h1>
 		<div class="description_content">
 			<h3 id="Description">Supports: </h3>
 			<img src="{{ url_for('static', filename='youtube_logo.png') }}" alt="YouTube logo" width="55" height="50">
 			<img src="{{ url_for('static', filename='soundcloud_logo.png') }}" alt="SoundCloud logo" width="70" height="50">
-			<img src="{{ url_for('static', filename='spotify_logo.png') }}" alt="Spotify logo" width="70" height="50">
 		</div>
+		{% with messages = get_flashed_messages(with_categories=True) %}
+			{% for category, message in messages %}
+				<div class="{{category}}">{{ message }}</div>
+			{% endfor %}
+		{% endwith %}
 		<form action="/download" method="post">
 			<input type="text" name="url_link" id="url_input" placeholder="Paste url here" required autofocus>
-			<input type="submit" name="download_btn" id="download_button" value="Download"></input>
+			<input type="submit" name="download_btn" id="download_button" value="Download">
 		</form>
+		<script src="/static/script.js"></script>
 	</body>
 </html>
