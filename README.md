@@ -32,6 +32,5 @@ docker build -t youloader-web:latest .
 docker run -it --rm --publish 5000:5000 youloader-web:latest
 ```
 
-### View of the program  
-
-![youloader_pic](https://user-images.githubusercontent.com/45132310/100654190-2077f780-3352-11eb-8e4b-a6ca144b62e0.png)
+# Licensing
+This project is licensed under [MIT license](https://github.com/SmileyBoy321/YouLoader/blob/master/LICENSE).
