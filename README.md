@@ -33,6 +33,9 @@ sudo pacman -S docker
 docker build -t youloader-web:latest .  
 docker run -it --rm --publish 5000:5000 youloader-web:latest
 ```
+# Contributing
+I wanted a simple and effective website to download youtube music and so I made this. If you have any ideas for this project, just open an issue and tell me what you think.
+If you'd like to contribute, please fork the repository and make changes as you'd like. Pull requests are warmly welcome.
 
 # Licensing
 This project is licensed under [MIT license](https://github.com/SmileyBoy321/YouLoader/blob/master/LICENSE).
