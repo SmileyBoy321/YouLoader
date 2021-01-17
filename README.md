@@ -1,6 +1,7 @@
 # YouLoader
 
 Web browser program to download music from YouTube and SoundCloud as MP3 with the click of a button.
+![youloader_pic](https://user-images.githubusercontent.com/45132310/100654190-2077f780-3352-11eb-8e4b-a6ca144b62e0.png)
 
 ## Getting started
 
