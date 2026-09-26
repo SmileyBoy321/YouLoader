@@ -64,6 +64,7 @@ class Page:
     faq: list[tuple[str, str]] = field(default_factory=list)
     in_sitemap: bool = True
     noindex: bool = False
+    render_faq_block: bool = True  # False when the page shows its questions its own way
 
 
 # ---------------------------------------------------------------- FAQ content
@@ -120,6 +121,94 @@ MP4_FAQ = [
      "<p>Not yet. It's on the list. If you'd like it sooner, say so on GitHub.</p>"),
 ]
 
+# ---------------------------------------------------------------- Common problems
+
+# website/data/problems.json is exported from the app's own error explanations (see ProblemCatalogueTests),
+# so the page always says exactly what the app says.
+PROBLEMS_FILE = ROOT / "data" / "problems.json"
+
+PROBLEM_SECTIONS = [
+    ("start", "Before you start",
+     "Something that happens before YouLoader even opens."),
+    ("video", "This video can't be downloaded",
+     "Some videos are locked on YouTube's side. These aren't bugs: YouLoader can only download what you could watch in a browser without signing in."),
+    ("youtube", "YouTube is blocking or limiting downloads",
+     "YouTube changes how it delivers videos from time to time and limits connections that download a lot. Most of these fix themselves."),
+    ("saving", "Saving the file",
+     "The download worked, but Windows wouldn't let YouLoader save it."),
+    ("converting", "Converting to MP3 or MP4",
+     "YouLoader uses a converter called ffmpeg to turn YouTube's streams into MP3 or MP4 files."),
+    ("connection", "Connection problems", ""),
+    ("app", "YouLoader itself", ""),
+]
+
+WEBSITE_ONLY_PROBLEMS = [
+    {
+        "id": "windows-protected-your-pc",
+        "category": "start",
+        "summary": "Windows protected your PC",
+        "cause": "Windows SmartScreen shows this for programs it hasn't seen many people download yet, and for programs that "
+                 "aren't code-signed. YouLoader isn't signed yet. The warning isn't about anything the program does: all the code is public on GitHub.",
+        "suggestions": [
+            "Click “More info”, then “Run anyway”.",
+            "To double-check the file, compare its SHA-256 checksum with the one listed on the GitHub release page.",
+        ],
+    },
+]
+
+
+def load_problems() -> list[dict]:
+    return WEBSITE_ONLY_PROBLEMS + json.loads(PROBLEMS_FILE.read_text(encoding="utf-8"))
+
+
+def problems_by_section(problems: list[dict]) -> list[tuple[str, str, str, list[dict]]]:
+    known = {key for key, _, _ in PROBLEM_SECTIONS}
+    unknown = {p["category"] for p in problems} - known
+    if unknown:
+        raise SystemExit(f"problems.json has sections the website doesn't know: {unknown}")
+    return [(key, title, intro, [p for p in problems if p["category"] == key])
+            for key, title, intro in PROBLEM_SECTIONS]
+
+
+def render_problem_index(problems: list[dict]) -> str:
+    return "\n".join(
+        f'      <a href="#section-{key}">{html.escape(title)} <span>{len(items)}</span></a>'
+        for key, title, _, items in problems_by_section(problems) if items
+    )
+
+
+def render_problems(problems: list[dict]) -> str:
+    parts = []
+    for key, title, intro, items in problems_by_section(problems):
+        if not items:
+            continue
+        parts.append(f'    <section class="problem-section" id="section-{key}">')
+        parts.append(f"      <h2>{html.escape(title)}</h2>")
+        if intro:
+            parts.append(f"      <p>{html.escape(intro)}</p>")
+        for p in items:
+            steps = "".join(f"<li>{html.escape(s)}</li>" for s in p["suggestions"])
+            parts.append(
+                f'      <article class="problem" id="{p["id"]}">\n'
+                f'        <h3>“{html.escape(p["summary"].rstrip("."))}”</h3>\n'
+                f'        <p><strong>Why it happens:</strong> {html.escape(p["cause"])}</p>\n'
+                f'        <p class="problem-steps-label">What to do</p>\n'
+                f"        <ol>{steps}</ol>\n"
+                f"      </article>"
+            )
+        parts.append("    </section>")
+    return "\n".join(parts)
+
+
+def problems_faq(problems: list[dict]) -> list[tuple[str, str]]:
+    """The same content as structured data, so search engines understand each question and answer."""
+    return [
+        (f"What does “{p['summary'].rstrip('.')}” mean in YouLoader?",
+         f"<p>{html.escape(p['cause'])} " + " ".join(html.escape(s) for s in p["suggestions"]) + "</p>")
+        for p in problems
+    ]
+
+
 PAGES_LIST = [
     Page("/", "index.html",
          "YouLoader: Free YouTube to MP3 & MP4 Downloader, No Ads",
@@ -133,6 +222,10 @@ PAGES_LIST = [
          "YouTube to MP4 in 1080p & 4K, No Ads · YouLoader",
          "Save YouTube videos as MP4 in 480p, 720p, 1080p or up to 4K and 8K. Free Windows app, no watermark, no ads, no pop-ups.",
          crumb="YouTube to MP4", faq=MP4_FAQ),
+    Page("/common-problems/", "common-problems.html",
+         "YouTube Download Problems and How to Fix Them · YouLoader",
+         "Why a YouTube download fails and how to fix it: private or blocked videos, bot checks, full disks, files in use, conversion errors and more.",
+         crumb="Common problems", faq=problems_faq(load_problems()), render_faq_block=False),
     Page("/privacy/", "privacy.html",
          "Privacy · YouLoader",
          "YouLoader has no ads, no analytics and no tracking, on this website or in the app. Here's exactly what connects to what.",
@@ -163,6 +256,7 @@ HEADER = f"""<a class="skip" href="#main">Skip to content</a>
       <a class="nav-optional" href="/#formats">Formats</a>
       <a class="nav-optional" href="/#why-free">Why free</a>
       <a class="nav-optional" href="/#faq">FAQ</a>
+      <a href="/common-problems/">Help</a>
       <a href="{GITHUB}">GitHub</a>
     </nav>
   </div>
@@ -186,6 +280,7 @@ FOOTER = f"""<footer class="site-footer">
         <h2>Learn</h2>
         <ul>
           <li><a href="/#faq">FAQ</a></li>
+          <li><a href="/common-problems/">Common problems</a></li>
           <li><a href="/#why-free">Why it's free</a></li>
           <li><a href="/privacy/">Privacy</a></li>
         </ul>
@@ -277,7 +372,9 @@ def render(page: Page, css_version: str) -> str:
         "{{github}}": GITHUB,
         "{{releases}}": RELEASES_URL,
         "{{version}}": VERSION,
-        "{{faq}}": render_faq(page.faq),
+        "{{faq}}": render_faq(page.faq) if page.render_faq_block else "",
+        "{{problem_index}}": render_problem_index(load_problems()) if "{{problem_index}}" in body else "",
+        "{{problems}}": render_problems(load_problems()) if "{{problems}}" in body else "",
         "{{crumbs}}": f'<nav class="crumbs" aria-label="Breadcrumb"><a href="/">YouLoader</a> / {html.escape(page.crumb)}</nav>',
     }
     for token, value in replacements.items():

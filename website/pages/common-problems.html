@@ -1,0 +1,19 @@
+<main id="main" class="article problems-page">
+  <div class="wrap">
+    {{crumbs}}
+    <p class="kicker">Help</p>
+    <h1>Common problems, <em>explained.</em></h1>
+    <p class="lead">When a download fails, YouLoader shows a short message and a <strong>Why?</strong> button. This page has every one of those explanations in one place: what the message means, why it happens, and what to do about it.</p>
+
+    <nav class="problem-index" aria-label="Problem categories">
+{{problem_index}}
+    </nav>
+
+{{problems}}
+
+    <div class="callout">
+      <p><strong>Still stuck?</strong> Click <strong>Why?</strong> on the failed download, then <strong>Report a problem</strong>. It opens a pre-filled report on GitHub and copies the technical details for you, with your Windows user name hidden.</p>
+      <div class="cta-row"><a class="btn btn-ghost" href="{{github}}/issues">Open GitHub issues</a></div>
+    </div>
+  </div>
+</main>

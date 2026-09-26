@@ -404,6 +404,27 @@ th { font: 500 12px/1.4 var(--mono); text-transform: uppercase; letter-spacing: 
 tr:last-child td { border-bottom: 0; }
 td strong { color: var(--ink); }
 
+/* ---------- Common problems ---------- */
+
+.problem-index { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+.problem-index a {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border: 1.5px solid var(--ink); border-radius: 999px;
+  font-size: 15px; text-decoration: none; background: var(--card);
+}
+.problem-index a:hover { background: var(--ink); color: var(--paper); }
+.problem-index span { font: 500 12px/1 var(--mono); color: var(--muted); }
+.problem-index a:hover span { color: inherit; }
+
+.problem-section { scroll-margin-top: 16px; }
+.problem-section > p { max-width: 42em; }
+.problem { border-top: 1px solid var(--rule); padding: 22px 0 8px; scroll-margin-top: 16px; }
+.problem h3 { font: 400 28px/1.15 var(--serif); letter-spacing: -0.01em; margin: 0 0 10px; color: var(--ink); }
+.problem p { margin: 0 0 10px; }
+.problem-steps-label { font: 500 12px/1.4 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px !important; }
+.problem ol { margin: 0 0 12px; }
+.problem:target { background: color-mix(in srgb, var(--red) 8%, transparent); border-radius: 10px; padding-left: 14px; padding-right: 14px; margin: 0 -14px; }
+
 /* ---------- Footer ---------- */
 
 .site-footer { border-top: 2px solid var(--ink); padding: 56px 0 40px; font-size: 15px; }

@@ -1,0 +1,207 @@
+[
+  {
+    "id": "file-in-use",
+    "category": "saving",
+    "summary": "The file is open in another program.",
+    "cause": "Windows doesn't let YouLoader replace a file while another program, usually a music or video player, has it open.",
+    "suggestions": [
+      "Close the program that's playing or showing the file.",
+      "Click Retry."
+    ]
+  },
+  {
+    "id": "folder-not-allowed",
+    "category": "saving",
+    "summary": "YouLoader isn't allowed to save in this folder.",
+    "cause": "Windows blocked writing to the folder. This happens with protected system folders, and when Windows Security's ransomware protection (“Controlled folder access”) doesn't know YouLoader yet.",
+    "suggestions": [
+      "Choose a different folder with “Change…”.",
+      "Or allow YouLoader in Windows Security → Virus & threat protection → Ransomware protection → Allow an app through Controlled folder access."
+    ]
+  },
+  {
+    "id": "disk-full",
+    "category": "saving",
+    "summary": "Your disk is full.",
+    "cause": "There wasn't enough free space to finish. Converting needs room for the download and the finished file at the same time.",
+    "suggestions": [
+      "Free up some space, or choose a folder on another drive with “Change…”.",
+      "Click Retry."
+    ]
+  },
+  {
+    "id": "path-too-long",
+    "category": "saving",
+    "summary": "The file name or folder path is too long for Windows.",
+    "cause": "Windows limits how long a file's full path can be, and this video's title plus your save folder went over it.",
+    "suggestions": [
+      "Choose a save folder closer to the top of the drive, such as D:\\Music.",
+      "Click Retry."
+    ]
+  },
+  {
+    "id": "cannot-convert-format",
+    "category": "converting",
+    "summary": "The file couldn't be converted to this format.",
+    "cause": "The converter (ffmpeg) couldn't fit part of the download, usually the cover art or an unusual audio stream, into the chosen format.",
+    "suggestions": [
+      "Click Retry.",
+      "If it fails again, turn off “Embed cover art & tags”, or pick another format.",
+      "If it keeps happening, click “Report a problem” and paste the technical details."
+    ]
+  },
+  {
+    "id": "damaged-download",
+    "category": "converting",
+    "summary": "The download arrived damaged.",
+    "cause": "The connection most likely dropped partway through, so the file was incomplete and couldn't be converted.",
+    "suggestions": [
+      "Click Retry."
+    ]
+  },
+  {
+    "id": "ffmpeg-missing",
+    "category": "converting",
+    "summary": "The converter (ffmpeg) is missing.",
+    "cause": "It was probably removed by antivirus software or a cleanup tool. YouLoader needs it to convert and merge files.",
+    "suggestions": [
+      "Restart YouLoader. It downloads ffmpeg again automatically.",
+      "If your antivirus removed it, allow the folder %LocalAppData%\\YouLoader\\tools."
+    ]
+  },
+  {
+    "id": "conversion-failed",
+    "category": "converting",
+    "summary": "Converting the file failed.",
+    "cause": "The converter (ffmpeg) stopped without saying exactly why. The usual reasons are a damaged download or a file that's open in another program.",
+    "suggestions": [
+      "Click Retry.",
+      "If it fails again, try another format.",
+      "If it keeps happening, click “Report a problem” and paste the technical details."
+    ]
+  },
+  {
+    "id": "private-video",
+    "category": "video",
+    "summary": "This video is private.",
+    "cause": "Only the uploader and people they've invited can watch it, so there's nothing YouLoader can download.",
+    "suggestions": [
+      "Check the link in your browser. If you can't watch it there either, it can't be downloaded."
+    ]
+  },
+  {
+    "id": "members-only",
+    "category": "video",
+    "summary": "This video is for channel members only.",
+    "cause": "The uploader made it available only to paying members of their channel. YouLoader doesn't sign in to YouTube, so it can't access it.",
+    "suggestions": [
+      "There's nothing to fix on your side; this video can't be downloaded."
+    ]
+  },
+  {
+    "id": "age-restricted",
+    "category": "video",
+    "summary": "This video is age-restricted.",
+    "cause": "YouTube only shows it to signed-in adults, and YouLoader never signs in to your account.",
+    "suggestions": [
+      "There's nothing to fix on your side; age-restricted videos can't be downloaded."
+    ]
+  },
+  {
+    "id": "bot-check",
+    "category": "youtube",
+    "summary": "YouTube asked for a bot check.",
+    "cause": "YouTube sometimes asks for this when it sees many downloads from one internet connection in a short time.",
+    "suggestions": [
+      "Wait a while (an hour is usually enough) before downloading more.",
+      "Click “Update yt-dlp” at the bottom of the window, then Retry."
+    ]
+  },
+  {
+    "id": "rate-limited",
+    "category": "youtube",
+    "summary": "YouTube is temporarily limiting your connection.",
+    "cause": "Too many requests came from your internet connection in a short time, so YouTube is slowing it down for a while.",
+    "suggestions": [
+      "Wait 15–30 minutes, then click Retry.",
+      "Download fewer videos at once."
+    ]
+  },
+  {
+    "id": "youtube-refused",
+    "category": "youtube",
+    "summary": "YouTube refused the download.",
+    "cause": "YouTube regularly changes how it delivers videos, and the download engine (yt-dlp) has to catch up. It can also happen briefly when YouTube limits a connection.",
+    "suggestions": [
+      "Click “Update yt-dlp” at the bottom of the window, then Retry.",
+      "If it still fails, wait a few minutes and try again."
+    ]
+  },
+  {
+    "id": "blocked-in-country",
+    "category": "video",
+    "summary": "This video is blocked in your country.",
+    "cause": "The uploader or YouTube limited which countries can watch it.",
+    "suggestions": [
+      "There's nothing to fix on your side; YouLoader can only download what you could watch in your browser."
+    ]
+  },
+  {
+    "id": "not-started",
+    "category": "video",
+    "summary": "This video hasn't started yet.",
+    "cause": "It's a scheduled premiere or live stream, so there's nothing to download until it has aired.",
+    "suggestions": [
+      "Try again after the premiere or stream has finished."
+    ]
+  },
+  {
+    "id": "video-unavailable",
+    "category": "video",
+    "summary": "This video is unavailable.",
+    "cause": "It was removed, made private, or the link is wrong.",
+    "suggestions": [
+      "Open the link in your browser to check it still plays.",
+      "Make sure the whole link was copied."
+    ]
+  },
+  {
+    "id": "unsupported-link",
+    "category": "video",
+    "summary": "YouLoader can't download from this link.",
+    "cause": "The link isn't a YouTube video, playlist or channel, or part of it is missing.",
+    "suggestions": [
+      "Copy the link again from the address bar or the Share button."
+    ]
+  },
+  {
+    "id": "quality-unavailable",
+    "category": "video",
+    "summary": "This quality isn't available for this video.",
+    "cause": "The video isn't offered in the format or quality you picked.",
+    "suggestions": [
+      "Pick another quality, such as “Best available”.",
+      "Click “Update yt-dlp” at the bottom of the window, then Retry."
+    ]
+  },
+  {
+    "id": "cannot-connect",
+    "category": "connection",
+    "summary": "Couldn't connect.",
+    "cause": "Your internet connection dropped, or the site didn't respond in time.",
+    "suggestions": [
+      "Check that you're online.",
+      "Click Retry."
+    ]
+  },
+  {
+    "id": "engine-did-not-start",
+    "category": "app",
+    "summary": "The download engine couldn't start.",
+    "cause": "yt-dlp.exe is missing or was blocked, often by antivirus software.",
+    "suggestions": [
+      "Restart YouLoader. It downloads yt-dlp again automatically.",
+      "If your antivirus removed it, allow the folder %LocalAppData%\\YouLoader\\tools."
+    ]
+  }
+]
