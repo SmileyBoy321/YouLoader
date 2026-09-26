@@ -9,13 +9,13 @@
 [Website](https://smileyboy321.github.io/YouLoader/)
 
 A free, open-source YouTube and SoundCloud downloader for Windows.<br>
-Opus, MP3 and MP4, with no ads, no pop-ups, no sign-up and no tracking.
+MP3 and MP4, with no ads, no pop-ups, no sign-up and no tracking.
 
 [![Download](https://img.shields.io/github/v/release/SmileyBoy321/YouLoader?label=Download&style=for-the-badge&color=e8372c)](https://github.com/SmileyBoy321/YouLoader/releases/latest/download/YouLoader.exe)
 [![CI](https://img.shields.io/github/actions/workflow/status/SmileyBoy321/YouLoader/ci.yml?branch=master&style=for-the-badge&label=tests)](https://github.com/SmileyBoy321/YouLoader/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-16140f?style=for-the-badge)](LICENSE)
 
-<img src="docs/screenshot.png" width="620" alt="The YouLoader window with Opus, MP3 and MP4 format choices and a download list">
+<img src="docs/screenshot.png" width="620" alt="The YouLoader window with MP3 and MP4 format choices and a download list">
 
 </div>
 
@@ -27,7 +27,7 @@ It follows the example of [VLC](https://www.videolan.org/): **free forever, no a
 
 ## Features
 
-- **Opus, MP3 and MP4.** Opus is an exact copy of YouTube's audio stream with no re-encoding. MP3 goes up to 320 kbps. MP4 goes from 480p up to 4K and 8K.
+- **MP3 and MP4.** MP3 up to 320 kbps, which plays on every device and car stereo. MP4 from 480p up to 4K and 8K.
 - **Playlists, channels and SoundCloud sets** download into their own numbered folder. Paste the same link later and only new items are fetched.
 - **Cover art and tags** are embedded automatically, with thumbnails cropped square for music players.
 - **Several links at once**, two downloads in parallel, cancel and retry per item, and automatic retries when YouTube drops a connection.
@@ -46,14 +46,14 @@ On first launch it downloads the official builds of [yt-dlp](https://github.com/
 
 ## Which format should I pick?
 
-| | Opus | MP3 | MP4 |
-|---|---|---|---|
-| **What** | YouTube's own audio, copied | Converted audio | Video + audio |
-| **4-minute song** | ≈ 4 MB | ≈ 9.6 MB (320 kbps) | depends on resolution |
-| **Quality** | Identical to YouTube | Near-identical | Up to 4K/8K |
-| **Plays on** | Android, PC, browsers, VLC | Everything | Everything at 1080p |
+| | MP3 | MP4 |
+|---|---|---|
+| **What** | Music | Video + audio |
+| **Quality** | 320, ~245 or 192 kbps | 480p up to 4K/8K |
+| **4-minute song** | ≈ 9.6 MB at 320 kbps | depends on resolution |
+| **Plays on** | Everything, car stereos too | Everything at 1080p |
 
-Pick **Opus** unless the music has to play on an iPhone, an old MP3 player or a car stereo.
+MP3 at 320 kbps sounds the same as YouTube to virtually everyone. For video that has to play on older TVs or editing software, pick 1080p.
 
 ## Building from source
 

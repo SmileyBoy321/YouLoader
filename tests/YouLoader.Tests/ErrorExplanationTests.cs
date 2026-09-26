@@ -125,10 +125,10 @@ public class TechnicalLogTests
     const string Home = @"C:\Users\Alex";
 
     [Theory]
-    [InlineData(@"Saving to C:\Users\Alex\Downloads\song.opus")]
-    [InlineData(@"'C:\\Users\\Alex\\Downloads\\song.opus'")]
-    [InlineData("C:/Users/Alex/Downloads/song.opus")]
-    [InlineData(@"c:\users\alex\Downloads\song.opus")]
+    [InlineData(@"Saving to C:\Users\Alex\Downloads\song.mp3")]
+    [InlineData(@"'C:\\Users\\Alex\\Downloads\\song.mp3'")]
+    [InlineData("C:/Users/Alex/Downloads/song.mp3")]
+    [InlineData(@"c:\users\alex\Downloads\song.mp3")]
     public void HidesTheHomeFolderHoweverItIsWritten(string line)
     {
         var text = TechnicalLog.HideHomeFolder(line, Home);
@@ -171,7 +171,7 @@ public class TechnicalLogTests
 public class FailedItemTests
 {
     static DownloadItem NewItem() =>
-        new("https://youtu.be/x", new DownloadRequest(OutputFormat.Opus, "original", false, true, @"C:\Music"));
+        new("https://youtu.be/x", new DownloadRequest(OutputFormat.Mp3, "320", false, true, @"C:\Music"));
 
     [Fact]
     public void FailingShowsTheSummaryAndKeepsTheExplanation()

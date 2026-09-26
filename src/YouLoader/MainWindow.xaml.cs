@@ -22,8 +22,7 @@ public partial class MainWindow : Window
 
     static readonly Dictionary<OutputFormat, string> FormatHints = new()
     {
-        [OutputFormat.Opus] = "The exact audio YouTube streams, copied without re-encoding. Smallest files at the best quality.",
-        [OutputFormat.Mp3] = "Converted from YouTube's audio. Bigger files, but plays on every device and car stereo.",
+        [OutputFormat.Mp3] = "Music that plays everywhere: phones, computers, car stereos and MP3 players. Saved with cover art and song info.",
         [OutputFormat.Mp4] = "Video with sound. 1080p and below use H.264, which plays everywhere.",
     };
 

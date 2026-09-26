@@ -59,9 +59,6 @@
 
                 <TextBlock Text="FORMAT" Style="{StaticResource Label}" Margin="2,16,0,8" />
                 <WrapPanel x:Name="FormatPanel">
-                    <RadioButton Style="{StaticResource Chip}" GroupName="format" Tag="Opus" Checked="Format_Checked">
-                        <TextBlock><Run Text="Opus" FontWeight="SemiBold" /><Run Text="  audio · best quality per MB" /></TextBlock>
-                    </RadioButton>
                     <RadioButton Style="{StaticResource Chip}" GroupName="format" Tag="Mp3" Checked="Format_Checked">
                         <TextBlock><Run Text="MP3" FontWeight="SemiBold" /><Run Text="  audio · plays everywhere" /></TextBlock>
                     </RadioButton>

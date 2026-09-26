@@ -274,7 +274,7 @@ a:hover { color: var(--red-ink); }
 }
 
 /* Formats */
-.formats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.formats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-width: 900px; }
 .format {
   position: relative;
   background: var(--card);
@@ -286,6 +286,7 @@ a:hover { color: var(--red-ink); }
 }
 .format.recommended { box-shadow: 6px 6px 0 var(--red); }
 .format .tag { position: absolute; top: -12px; left: 20px; background: var(--red); color: #fff; font: 500 11px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 9px; border-radius: 999px; }
+.format .tag-ink { background: var(--ink); color: var(--paper); }
 .format h3 { font: 400 44px/1 var(--serif); margin: 4px 0 6px; }
 .format .what { font: 500 13px/1.4 var(--mono); color: var(--muted); margin: 0 0 16px; }
 .format p { margin: 0 0 18px; color: var(--ink-2); }

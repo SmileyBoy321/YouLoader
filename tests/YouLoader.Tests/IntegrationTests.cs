@@ -63,32 +63,21 @@ public class IntegrationTests(ToolsFixture fixture, Xunit.Abstractions.ITestOutp
     }
 
     [IntegrationFact]
-    public async Task Opus_IsSavedWithSquareCoverArt()
-    {
-        var item = await DownloadAsync(Item(OutputFormat.Opus, "original"));
-
-        Assert.Equal(DownloadState.Done, item.State);
-        Assert.Equal("Me at the zoo", item.Title);
-        Assert.EndsWith(".opus", item.FilePath);
-        Assert.True(File.Exists(item.FilePath));
-
-        var streams = Probe(item.FilePath!, "stream=codec_name,width,height");
-        Assert.Contains("codec_name=opus", streams);
-        Assert.Contains("codec_name=mjpeg", streams);
-        Assert.Contains("width=360", streams);
-        Assert.Contains("height=360", streams);
-    }
-
-    [IntegrationFact]
-    public async Task Mp3_IsSavedAt320Kbps()
+    public async Task Mp3_IsSavedAt320KbpsWithSquareCoverArt()
     {
         var item = await DownloadAsync(Item(OutputFormat.Mp3, "320"));
 
         Assert.Equal(DownloadState.Done, item.State);
+        Assert.Equal("Me at the zoo", item.Title);
         Assert.EndsWith(".mp3", item.FilePath);
-        var streams = Probe(item.FilePath!, "stream=codec_name,bit_rate");
+        Assert.True(File.Exists(item.FilePath));
+
+        var streams = Probe(item.FilePath!, "stream=codec_name,bit_rate,width,height");
         Assert.Contains("codec_name=mp3", streams);
         Assert.Contains("bit_rate=320000", streams);
+        Assert.Contains("codec_name=mjpeg", streams);
+        Assert.Contains("width=360", streams);
+        Assert.Contains("height=360", streams);
     }
 
     [IntegrationFact]
@@ -106,9 +95,9 @@ public class IntegrationTests(ToolsFixture fixture, Xunit.Abstractions.ITestOutp
     [IntegrationFact]
     public async Task DownloadingTheSameVideoTwice_WithCoverArt_StillWorks()
     {
-        // Regression: re-tagging an existing Opus file that already has cover art used to fail with "Conversion failed!".
-        var first = await DownloadAsync(Item(OutputFormat.Opus, "original"));
-        var second = await DownloadAsync(Item(OutputFormat.Opus, "original"));
+        // Regression: re-tagging an existing file that already has cover art used to fail with "Conversion failed!".
+        var first = await DownloadAsync(Item(OutputFormat.Mp3, "320"));
+        var second = await DownloadAsync(Item(OutputFormat.Mp3, "320"));
 
         Assert.Equal(DownloadState.Done, second.State);
         Assert.Equal(first.FilePath, second.FilePath);
@@ -117,7 +106,7 @@ public class IntegrationTests(ToolsFixture fixture, Xunit.Abstractions.ITestOutp
     [IntegrationFact]
     public async Task UnavailableVideo_FailsWithFriendlyMessage()
     {
-        var item = await DownloadAsync(Item(OutputFormat.Opus, "original", url: "https://www.youtube.com/watch?v=xxxxxxxxxxx"));
+        var item = await DownloadAsync(Item(OutputFormat.Mp3, "320", url: "https://www.youtube.com/watch?v=xxxxxxxxxxx"));
 
         Assert.Equal(DownloadState.Failed, item.State);
         Assert.DoesNotContain("ERROR:", item.Status);

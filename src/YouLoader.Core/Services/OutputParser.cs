@@ -72,7 +72,7 @@ public static class OutputParser
 
     public static string DescribeStep(string step, OutputFormat format) => step switch
     {
-        "ExtractAudio" => format == OutputFormat.Mp3 ? "Converting to MP3…" : "Extracting audio…",
+        "ExtractAudio" => "Converting to MP3…",
         "Merger" => "Merging video and audio…",
         "ThumbnailsConvertor" => "Preparing cover art…",
         "EmbedThumbnail" => "Adding cover art…",

@@ -21,17 +21,6 @@ public class YtDlpArgumentsTests
         return args[index + 1];
     }
 
-    [Fact]
-    public void Opus_CopiesYouTubesOpusStreamWithoutReencoding()
-    {
-        var args = Build(Request(OutputFormat.Opus, "original"));
-
-        Assert.Equal("bestaudio[acodec=opus]/bestaudio/best", ValueAfter(args, "--format"));
-        Assert.Equal("opus", ValueAfter(args, "--audio-format"));
-        Assert.Contains("--extract-audio", args);
-        Assert.DoesNotContain("--audio-quality", args);
-    }
-
     [Theory]
     [InlineData("320", "320K")]
     [InlineData("v0", "0")]
@@ -63,7 +52,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void AlwaysIgnoresUserConfigAndForcesUtf8Output()
     {
-        var args = Build(Request(OutputFormat.Opus));
+        var args = Build(Request(OutputFormat.Mp3));
 
         Assert.Contains("--ignore-config", args);
         Assert.Equal("utf-8", ValueAfter(args, "--encoding"));
@@ -72,7 +61,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void PassesToolLocationsAndOutputFolder()
     {
-        var args = Build(Request(OutputFormat.Opus));
+        var args = Build(Request(OutputFormat.Mp3));
 
         Assert.Equal(@"C:\ffmpeg\bin", ValueAfter(args, "--ffmpeg-location"));
         Assert.Equal(@"C:\Music", ValueAfter(args, "--paths"));
@@ -82,7 +71,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void OmitsJsRuntimeWhenNoneIsKnown()
     {
-        var args = Build(Request(OutputFormat.Opus), js: null);
+        var args = Build(Request(OutputFormat.Mp3), js: null);
 
         Assert.DoesNotContain("--js-runtimes", args);
     }
@@ -90,7 +79,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void UrlComesLastAfterDoubleDash_SoItCantBeReadAsAnOption()
     {
-        var args = Build(Request(OutputFormat.Opus), url: "-https://evil");
+        var args = Build(Request(OutputFormat.Mp3), url: "-https://evil");
 
         Assert.Equal("--", args[^2]);
         Assert.Equal("-https://evil", args[^1]);
@@ -99,7 +88,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void SingleVideo_DownloadsJustThatVideoIntoTheOutputFolder()
     {
-        var args = Build(Request(OutputFormat.Opus));
+        var args = Build(Request(OutputFormat.Mp3));
 
         Assert.Contains("--no-playlist", args);
         Assert.Equal(YtDlpArguments.SingleTemplate, ValueAfter(args, "--output"));
@@ -108,7 +97,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void SingleVideo_IsAlwaysDownloadedFresh()
     {
-        var args = Build(Request(OutputFormat.Opus));
+        var args = Build(Request(OutputFormat.Mp3));
 
         Assert.Contains("--force-overwrites", args);
         Assert.DoesNotContain("--download-archive", args);
@@ -117,7 +106,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void Playlist_DownloadsEverythingIntoItsOwnNumberedFolder()
     {
-        var args = Build(Request(OutputFormat.Opus), url: Playlist);
+        var args = Build(Request(OutputFormat.Mp3), url: Playlist);
 
         Assert.Contains("--yes-playlist", args);
         Assert.Contains("--ignore-errors", args);
@@ -126,7 +115,6 @@ public class YtDlpArgumentsTests
     }
 
     [Theory]
-    [InlineData(OutputFormat.Opus, @"C:\Music\.youloader-opus.archive")]
     [InlineData(OutputFormat.Mp3, @"C:\Music\.youloader-mp3.archive")]
     [InlineData(OutputFormat.Mp4, @"C:\Music\.youloader-mp4.archive")]
     public void Playlist_KeepsAPerFormatArchiveSoReRunsOnlyFetchNewItems(OutputFormat format, string archive)
@@ -159,7 +147,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void WithoutCoverArt_SkipsAllEmbedding()
     {
-        var args = Build(Request(OutputFormat.Opus, embedArt: false));
+        var args = Build(Request(OutputFormat.Mp3, embedArt: false));
 
         Assert.DoesNotContain("--embed-metadata", args);
         Assert.DoesNotContain("--embed-thumbnail", args);
@@ -169,7 +157,7 @@ public class YtDlpArgumentsTests
     [Fact]
     public void RequestsMachineReadableProgressAndSavedFilePaths()
     {
-        var args = Build(Request(OutputFormat.Opus));
+        var args = Build(Request(OutputFormat.Mp3));
 
         Assert.Contains(YtDlpArguments.DownloadProgressTemplate, args);
         Assert.Contains(YtDlpArguments.ProcessingTemplate, args);

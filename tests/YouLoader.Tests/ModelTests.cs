@@ -7,7 +7,7 @@ namespace YouLoader.Tests;
 public class ModelTests
 {
     static DownloadItem NewItem() =>
-        new("https://youtu.be/x", new DownloadRequest(OutputFormat.Opus, "original", false, true, @"C:\Music"));
+        new("https://youtu.be/x", new DownloadRequest(OutputFormat.Mp3, "320", false, true, @"C:\Music"));
 
     [Fact]
     public void NewItemIsQueuedAndShowsItsUrlAsTitle()
@@ -17,7 +17,7 @@ public class ModelTests
         Assert.Equal(DownloadState.Queued, item.State);
         Assert.True(item.IsActive);
         Assert.Equal("https://youtu.be/x", item.Title);
-        Assert.Equal("OPUS", item.FormatLabel);
+        Assert.Equal("MP3", item.FormatLabel);
     }
 
     [Fact]
@@ -36,27 +36,27 @@ public class ModelTests
     public void CompleteWithOneFileShowsItsName()
     {
         var item = NewItem();
-        item.ReportSavedFile(@"C:\Music\Song.opus");
+        item.ReportSavedFile(@"C:\Music\Song.mp3");
 
         item.Complete();
 
         Assert.Equal(DownloadState.Done, item.State);
         Assert.True(item.IsDone);
         Assert.False(item.IsActive);
-        Assert.Equal("Saved · Song.opus", item.Status);
+        Assert.Equal("Saved · Song.mp3", item.Status);
     }
 
     [Fact]
     public void CompleteWithManyFilesShowsCountAndWarning()
     {
         var item = NewItem();
-        item.ReportSavedFile("a.opus");
-        item.ReportSavedFile("b.opus");
+        item.ReportSavedFile("a.mp3");
+        item.ReportSavedFile("b.mp3");
 
         item.Complete("some items failed");
 
         Assert.Equal("Saved 2 files · some items failed", item.Status);
-        Assert.Equal("b.opus", item.FilePath);
+        Assert.Equal("b.mp3", item.FilePath);
     }
 
     [Fact]
@@ -75,13 +75,13 @@ public class ModelTests
     [Fact]
     public void SameVideoAndFormatAreDuplicatesButOtherFormatsAreNot()
     {
-        var request = new DownloadRequest(OutputFormat.Opus, "original", false, true, @"C:\Music");
+        var request = new DownloadRequest(OutputFormat.Mp3, "320", false, true, @"C:\Music");
         var a = new DownloadItem("https://youtu.be/abc123", request);
         var b = new DownloadItem("https://www.youtube.com/watch?v=abc123&t=5", request);
-        var asMp3 = new DownloadItem("https://youtu.be/abc123", request with { Format = OutputFormat.Mp3 });
+        var asMp4 = new DownloadItem("https://youtu.be/abc123", request with { Format = OutputFormat.Mp4 });
 
         Assert.Equal(a.Key, b.Key);
-        Assert.NotEqual(a.Key, asMp3.Key);
+        Assert.NotEqual(a.Key, asMp4.Key);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class ModelTests
     {
         var item = NewItem();
         var oldToken = item.Cancellation.Token;
-        item.ReportSavedFile("a.opus");
+        item.ReportSavedFile("a.mp3");
         item.Cancel();
         item.MarkCanceled();
         Assert.True(item.CanRetry);
@@ -169,7 +169,7 @@ public class ModelTests
     {
         Assert.Equal("320", QualityPresets.Find(OutputFormat.Mp3, "nope").Key);
         Assert.Equal("720", QualityPresets.Find(OutputFormat.Mp4, "720").Key);
-        Assert.Equal("original", QualityPresets.Find(OutputFormat.Opus, null).Key);
+        Assert.Equal("320", QualityPresets.Find(OutputFormat.Mp3, null).Key);
     }
 }
 
@@ -205,7 +205,7 @@ public class AppSettingsTests : IDisposable
     {
         var settings = AppSettings.Load(path);
 
-        Assert.Equal(OutputFormat.Opus, settings.Format);
+        Assert.Equal(OutputFormat.Mp3, settings.Format);
         Assert.True(settings.EmbedArt);
         Assert.Equal(AppSettings.DefaultOutputDir, settings.OutputDir);
     }
@@ -228,6 +228,20 @@ public class AppSettingsTests : IDisposable
     }
 
     [Fact]
+    public void OldSettingsWithOpusSwitchToMp3AndKeepTheirFolder()
+    {
+        // Opus was removed in 2.0; settings saved by an earlier build must still load.
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path, """{ "OutputDir": "D:\\Music", "Format": "Opus", "EmbedArt": false }""");
+
+        var settings = AppSettings.Load(path);
+
+        Assert.Equal(OutputFormat.Mp3, settings.Format);
+        Assert.Equal(@"D:\Music", settings.OutputDir);
+        Assert.False(settings.EmbedArt);
+    }
+
+    [Fact]
     public void CorruptFileGivesDefaultsInsteadOfCrashing()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -235,7 +249,7 @@ public class AppSettingsTests : IDisposable
 
         var settings = AppSettings.Load(path);
 
-        Assert.Equal(OutputFormat.Opus, settings.Format);
+        Assert.Equal(OutputFormat.Mp3, settings.Format);
     }
 
     [Fact]

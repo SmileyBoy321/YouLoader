@@ -69,9 +69,6 @@ public static class YtDlpArguments
 
     public static string[] FormatArguments(OutputFormat format, string quality) => format switch
     {
-        // YouTube already streams Opus, so this is a straight copy with no quality loss.
-        OutputFormat.Opus =>
-            ["--format", "bestaudio[acodec=opus]/bestaudio/best", "--extract-audio", "--audio-format", "opus"],
         OutputFormat.Mp3 =>
             ["--format", "bestaudio/best", "--extract-audio", "--audio-format", "mp3", "--audio-quality", Mp3Quality(quality)],
         OutputFormat.Mp4 =>

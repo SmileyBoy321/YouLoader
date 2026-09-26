@@ -26,7 +26,7 @@ draw.text((128, 58), "YouLoader", font=brand, fill=INK)
 draw.text((62, 190), "Downloads.", font=serif, fill=INK)
 draw.text((62, 310), "Nothing else.", font=serif_italic, fill=RED)
 draw.text((66, 480), "FREE YOUTUBE & SOUNDCLOUD DOWNLOADER", font=mono, fill=MUTED)
-draw.text((66, 514), "Opus · MP3 · MP4  —  no ads, no tracking", font=mono, fill=MUTED)
+draw.text((66, 514), "MP3 · MP4  —  no ads, no tracking", font=mono, fill=MUTED)
 
 # The app screenshot, tilted, with a hard offset shadow like on the site
 shot = Image.open(ASSETS / "screenshot.png").convert("RGBA")

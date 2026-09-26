@@ -83,9 +83,9 @@ public class OutputParserTests
     [Fact]
     public void ParsesSavedFilePath()
     {
-        var saved = Assert.IsType<FileSaved>(OutputParser.Parse(@"[file]C:\Users\me\Downloads\YouLoader\Árcangel – ÿ.opus"));
+        var saved = Assert.IsType<FileSaved>(OutputParser.Parse(@"[file]C:\Users\me\Downloads\YouLoader\Árcangel – ÿ.mp3"));
 
-        Assert.Equal(@"C:\Users\me\Downloads\YouLoader\Árcangel – ÿ.opus", saved.Path);
+        Assert.Equal(@"C:\Users\me\Downloads\YouLoader\Árcangel – ÿ.mp3", saved.Path);
     }
 
     [Theory]
@@ -104,7 +104,7 @@ public class OutputParserTests
         var progress = new DownloadProgress(31_562_137, 71_303_987, false, null, null, "x");
         var reading = new TransferReading(4.4 * 1024 * 1024, TimeSpan.FromSeconds(12));
 
-        Assert.Equal("44% · 30.1 of 68.0 MB · 4.4 MB/s · 0:12 left", OutputParser.Describe(progress, OutputFormat.Opus, reading));
+        Assert.Equal("44% · 30.1 of 68.0 MB · 4.4 MB/s · 0:12 left", OutputParser.Describe(progress, OutputFormat.Mp3, reading));
     }
 
     [Fact]
@@ -123,15 +123,14 @@ public class OutputParserTests
     {
         var progress = new DownloadProgress(2 * 1024 * 1024, null, false, null, null, "x");
 
-        Assert.Equal("2.0 MB", OutputParser.Describe(progress, OutputFormat.Opus, new TransferReading(null, null)));
+        Assert.Equal("2.0 MB", OutputParser.Describe(progress, OutputFormat.Mp3, new TransferReading(null, null)));
     }
 
     [Theory]
     [InlineData("ExtractAudio", OutputFormat.Mp3, "Converting to MP3…")]
-    [InlineData("ExtractAudio", OutputFormat.Opus, "Extracting audio…")]
     [InlineData("Merger", OutputFormat.Mp4, "Merging video and audio…")]
-    [InlineData("EmbedThumbnail", OutputFormat.Opus, "Adding cover art…")]
-    [InlineData("SomethingNew", OutputFormat.Opus, "Processing…")]
+    [InlineData("EmbedThumbnail", OutputFormat.Mp3, "Adding cover art…")]
+    [InlineData("SomethingNew", OutputFormat.Mp3, "Processing…")]
     public void DescribeStep(string step, OutputFormat format, string expected)
     {
         Assert.Equal(expected, OutputParser.DescribeStep(step, format));

@@ -2,7 +2,6 @@ namespace YouLoader.Core.Models;
 
 public enum OutputFormat
 {
-    Opus,
     Mp3,
     Mp4,
 }
@@ -11,11 +10,6 @@ public sealed record QualityPreset(string Key, string Label);
 
 public static class QualityPresets
 {
-    static readonly QualityPreset[] Opus =
-    [
-        new("original", "Original quality (no re-encoding)"),
-    ];
-
     static readonly QualityPreset[] Mp3 =
     [
         new("320", "320 kbps (best)"),
@@ -33,7 +27,6 @@ public static class QualityPresets
 
     public static IReadOnlyList<QualityPreset> For(OutputFormat format) => format switch
     {
-        OutputFormat.Opus => Opus,
         OutputFormat.Mp3 => Mp3,
         OutputFormat.Mp4 => Mp4,
         _ => throw new ArgumentOutOfRangeException(nameof(format), format, null),

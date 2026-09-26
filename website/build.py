@@ -81,9 +81,9 @@ HOME_FAQ = [
      "<p>YouLoader is the friendly front end. The heavy lifting is done by two respected open-source tools: "
      "<a href=\"https://github.com/yt-dlp/yt-dlp\">yt-dlp</a> fetches the media and <a href=\"https://ffmpeg.org\">ffmpeg</a> converts it. "
      "YouLoader downloads their official builds once, then keeps yt-dlp updated automatically, because YouTube changes often.</p>"),
-    ("Should I pick Opus or MP3?",
-     "<p>Opus, unless you play music on an old device or a car stereo. YouTube streams music as Opus, so saving it as Opus is a perfect copy at about 4 MB per song. "
-     "MP3 is a conversion: bigger, never better, but it plays everywhere. The <a href=\"/opus-vs-mp3/\">Opus vs MP3 guide</a> explains it in detail.</p>"),
+    ("Which MP3 quality should I pick?",
+     "<p>320 kbps, the default. It's the highest quality MP3 has, and it sounds the same as YouTube to virtually everyone. "
+     "If you keep a big library on a small device, the ~245 kbps setting saves about a quarter of the space, and almost nobody can hear the difference.</p>"),
     ("Can it download whole playlists and channels?",
      "<p>Yes. Playlist, channel, SoundCloud set and artist links download everything into their own numbered folder. "
      "Paste the same link again later and YouLoader fetches only what's new.</p>"),
@@ -120,15 +120,6 @@ MP4_FAQ = [
      "<p>Not yet. It's on the list. If you'd like it sooner, say so on GitHub.</p>"),
 ]
 
-OPUS_FAQ = [
-    ("Will my phone play .opus files?",
-     "<p>Android plays Opus natively, as do Chrome, Firefox, Edge, VLC and foobar2000. Windows 11's Media Player opens them too. "
-     "For iPhones, older MP3 players and car stereos, pick MP3 instead.</p>"),
-    ("Is Opus from YouLoader really lossless?",
-     "<p>It's an exact copy of the audio YouTube sends, not a lossless master. Nothing is re-encoded, so no quality is lost on your side. "
-     "It's the best version of the audio that YouTube makes available.</p>"),
-]
-
 SOUNDCLOUD_FAQ = [
     ("Can I download a whole SoundCloud playlist or album?",
      "<p>Yes. Paste a set, album, artist or likes link. Tracks are saved into their own folder, and running the same link again grabs only new tracks.</p>"),
@@ -140,7 +131,7 @@ SOUNDCLOUD_FAQ = [
 PAGES_LIST = [
     Page("/", "index.html",
          "YouLoader: Free YouTube to MP3 & MP4 Downloader, No Ads",
-         "Download YouTube and SoundCloud as Opus, MP3 or MP4 with a free Windows app. No ads, no pop-ups, no sign-up, no tracking. Open source.",
+         "Download YouTube and SoundCloud as MP3 or MP4 with a free Windows app. No ads, no pop-ups, no sign-up, no tracking. Open source.",
          faq=HOME_FAQ),
     Page("/youtube-to-mp3/", "youtube-to-mp3.html",
          "YouTube to MP3 Without Ads or Pop-ups · YouLoader",
@@ -150,18 +141,10 @@ PAGES_LIST = [
          "YouTube to MP4 in 1080p & 4K, No Ads · YouLoader",
          "Save YouTube videos as MP4 in 480p, 720p, 1080p or up to 4K and 8K. Free Windows app, no watermark, no ads, no pop-ups.",
          crumb="YouTube to MP4", faq=MP4_FAQ),
-    Page("/youtube-to-opus/", "youtube-to-opus.html",
-         "YouTube to Opus: Best Quality, Smallest Files · YouLoader",
-         "Save YouTube audio as Opus: an exact copy of the stream YouTube plays, with no re-encoding, at about 4 MB per song. Free and ad-free.",
-         crumb="YouTube to Opus", faq=OPUS_FAQ),
     Page("/soundcloud-to-mp3/", "soundcloud-to-mp3.html",
          "SoundCloud to MP3 Downloader, Free & Ad-Free · YouLoader",
-         "Download SoundCloud tracks, albums, playlists and artist pages as MP3 or Opus. Free Windows app with no ads, no pop-ups and no sign-up.",
+         "Download SoundCloud tracks, albums, playlists and artist pages as MP3. A free Windows app with no ads, no pop-ups and no sign-up.",
          crumb="SoundCloud to MP3", faq=SOUNDCLOUD_FAQ),
-    Page("/opus-vs-mp3/", "opus-vs-mp3.html",
-         "Opus vs MP3: Which Sounds Better and Takes Less Space?",
-         "Opus or MP3? How they compare in quality, file size and compatibility, why YouTube uses Opus, and why downloaded songs can sound louder.",
-         crumb="Opus vs MP3"),
     Page("/privacy/", "privacy.html",
          "Privacy · YouLoader",
          "YouLoader has no ads, no analytics and no tracking, on this website or in the app. Here's exactly what connects to what.",
@@ -209,14 +192,12 @@ FOOTER = f"""<footer class="site-footer">
         <ul>
           <li><a href="/youtube-to-mp3/">YouTube to MP3</a></li>
           <li><a href="/youtube-to-mp4/">YouTube to MP4</a></li>
-          <li><a href="/youtube-to-opus/">YouTube to Opus</a></li>
           <li><a href="/soundcloud-to-mp3/">SoundCloud to MP3</a></li>
         </ul>
       </div>
       <div>
         <h2>Learn</h2>
         <ul>
-          <li><a href="/opus-vs-mp3/">Opus vs MP3</a></li>
           <li><a href="/#faq">FAQ</a></li>
           <li><a href="/#why-free">Why it's free</a></li>
           <li><a href="/privacy/">Privacy</a></li>
