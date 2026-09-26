@@ -23,6 +23,10 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
     DownloadState state = DownloadState.Queued;
     string? filePath;
     bool isHighlighted;
+    ErrorExplanation? error;
+    string? technicalDetails;
+    bool showExplanation;
+    bool showTechnicalDetails;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -39,6 +43,42 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
         get => isHighlighted;
         set => Set(ref isHighlighted, value);
     }
+    /// <summary>Why the download failed, for the “Why?” panel. Null unless the item failed.</summary>
+    public ErrorExplanation? Error
+    {
+        get => error;
+        private set
+        {
+            if (Set(ref error, value)) OnPropertyChanged(nameof(HasExplanation));
+        }
+    }
+
+    public bool HasExplanation => Error is not null;
+
+    /// <summary>The end of yt-dlp's log, with the user's home folder hidden, for bug reports.</summary>
+    public string? TechnicalDetails
+    {
+        get => technicalDetails;
+        private set
+        {
+            if (Set(ref technicalDetails, value)) OnPropertyChanged(nameof(HasTechnicalDetails));
+        }
+    }
+
+    public bool HasTechnicalDetails => TechnicalDetails is not null;
+
+    public bool ShowExplanation
+    {
+        get => showExplanation;
+        set => Set(ref showExplanation, value);
+    }
+
+    public bool ShowTechnicalDetails
+    {
+        get => showTechnicalDetails;
+        set => Set(ref showTechnicalDetails, value);
+    }
+
     public CancellationTokenSource Cancellation { get; private set; } = new();
     public int SavedFiles { get; private set; }
 
@@ -130,10 +170,12 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
         Status = warning is null ? saved : $"{saved} · {warning}";
     }
 
-    public void Fail(string message)
+    public void Fail(ErrorExplanation explanation, string? technicalDetails = null)
     {
+        Error = explanation;
+        TechnicalDetails = string.IsNullOrWhiteSpace(technicalDetails) ? null : technicalDetails;
         State = DownloadState.Failed;
-        Status = message;
+        Status = explanation.Summary;
     }
 
     public void MarkCanceled()
@@ -148,6 +190,10 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
     public void Reset()
     {
         Cancellation = new CancellationTokenSource();
+        Error = null;
+        TechnicalDetails = null;
+        ShowExplanation = false;
+        ShowTechnicalDetails = false;
         SavedFiles = 0;
         FilePath = null;
         Progress = 0;

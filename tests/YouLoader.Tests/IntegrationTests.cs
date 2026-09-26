@@ -121,7 +121,9 @@ public class IntegrationTests(ToolsFixture fixture, Xunit.Abstractions.ITestOutp
 
         Assert.Equal(DownloadState.Failed, item.State);
         Assert.DoesNotContain("ERROR:", item.Status);
-        Assert.False(string.IsNullOrWhiteSpace(item.Status));
+        // Checks the exact wording, so a change in YouTube's message shows up here instead of as a vague error for users.
+        Assert.Equal("This video is unavailable.", item.Status);
+        Assert.NotNull(item.TechnicalDetails);
     }
 
     [IntegrationFact]

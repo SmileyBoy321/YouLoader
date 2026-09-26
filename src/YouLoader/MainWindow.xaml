@@ -139,6 +139,7 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
                                     <DockPanel>
@@ -185,6 +186,19 @@
                                     <StackPanel Grid.Column="1" Grid.RowSpan="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
                                         <Button Content="Cancel" Style="{StaticResource GhostButton}" Click="Cancel_Click"
                                                 Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibility}}" />
+                                        <Button Click="Why_Click" Margin="0,0,6,0"
+                                                Visibility="{Binding HasExplanation, Converter={StaticResource BoolToVisibility}}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource GhostButton}">
+                                                    <Setter Property="Content" Value="Why?" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ShowExplanation}" Value="True">
+                                                            <Setter Property="Content" Value="Hide" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
                                         <Button Content="Retry" Style="{StaticResource GhostButton}" Click="Retry_Click"
                                                 Visibility="{Binding CanRetry, Converter={StaticResource BoolToVisibility}}" />
                                         <Button Content="▶  Play" Style="{StaticResource GhostButton}" Click="Play_Click" Margin="0,0,6,0"
@@ -192,6 +206,52 @@
                                         <Button Content="Show" Style="{StaticResource GhostButton}" Click="Show_Click"
                                                 Visibility="{Binding IsDone, Converter={StaticResource BoolToVisibility}}" />
                                     </StackPanel>
+
+                                    <!-- The answer to "why did this fail?", shown inside the item -->
+                                    <Border Grid.Row="3" Grid.ColumnSpan="2" Margin="0,12,0,0" Padding="14,12" CornerRadius="10"
+                                            Background="{StaticResource Field}" BorderBrush="{StaticResource CardBorder}" BorderThickness="1"
+                                            Visibility="{Binding ShowExplanation, Converter={StaticResource BoolToVisibility}}">
+                                        <StackPanel>
+                                            <TextBlock Text="WHAT HAPPENED" Style="{StaticResource Label}" />
+                                            <TextBlock Text="{Binding Error.Cause}" TextWrapping="Wrap" LineHeight="20" Margin="0,4,0,12" />
+                                            <TextBlock Text="WHAT YOU CAN TRY" Style="{StaticResource Label}" />
+                                            <ItemsControl ItemsSource="{Binding Error.Suggestions}" Margin="0,4,0,6" Focusable="False">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <DockPanel Margin="0,2">
+                                                            <TextBlock Text="•" Foreground="{StaticResource Accent}" Margin="0,0,8,0" />
+                                                            <TextBlock Text="{Binding}" TextWrapping="Wrap" LineHeight="20" />
+                                                        </DockPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <DockPanel Margin="0,6,0,0">
+                                                <Button DockPanel.Dock="Right" Content="Report a problem" Style="{StaticResource LinkButton}"
+                                                        Margin="14,0,0,0" Click="Report_Click" />
+                                                <Button DockPanel.Dock="Right" Content="Copy details" Style="{StaticResource LinkButton}"
+                                                        Margin="14,0,0,0" Click="CopyDetails_Click"
+                                                        Visibility="{Binding HasTechnicalDetails, Converter={StaticResource BoolToVisibility}}" />
+                                                <Button HorizontalAlignment="Left" Click="ToggleDetails_Click"
+                                                        Visibility="{Binding HasTechnicalDetails, Converter={StaticResource BoolToVisibility}}">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button" BasedOn="{StaticResource LinkButton}">
+                                                            <Setter Property="Content" Value="Show technical details ▾" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ShowTechnicalDetails}" Value="True">
+                                                                    <Setter Property="Content" Value="Hide technical details ▴" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </DockPanel>
+                                            <TextBox Text="{Binding TechnicalDetails, Mode=OneWay}" IsReadOnly="True" Style="{StaticResource FieldBox}"
+                                                     FontFamily="Cascadia Mono, Consolas" FontSize="11.5" MaxHeight="180" Margin="0,8,0,0"
+                                                     TextWrapping="NoWrap" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                                                     AutomationProperties.Name="Technical details"
+                                                     Visibility="{Binding ShowTechnicalDetails, Converter={StaticResource BoolToVisibility}}" />
+                                        </StackPanel>
+                                    </Border>
                                 </Grid>
                             </Border>
                         </DataTemplate>

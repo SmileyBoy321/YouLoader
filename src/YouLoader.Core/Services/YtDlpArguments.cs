@@ -27,6 +27,8 @@ public static class YtDlpArguments
             "--newline",
             "--no-colors",
             "--no-mtime",
+            // Makes ffmpeg's own error messages appear in the log, so failures can be explained instead of just "Conversion failed!".
+            "--verbose",
             "--concurrent-fragments", "4",
             "--ffmpeg-location", ffmpegDir,
             "--paths", request.OutputDir,

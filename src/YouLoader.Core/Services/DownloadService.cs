@@ -30,7 +30,8 @@ public sealed class DownloadService(ToolManager tools)
             var result = await RunOnceAsync(item, token);
             if (result is null) break;
 
-            var (exitCode, lastError) = result.Value;
+            var (exitCode, log) = result.Value;
+            var lastError = log.LastOrDefault(l => l.StartsWith("ERROR:", StringComparison.Ordinal));
             if (token.IsCancellationRequested) item.MarkCanceled();
             else if (item.SavedFiles > 0) item.Complete(exitCode == 0 ? null : "some items failed");
             else if (exitCode == 0 && LinkParser.IsCollection(item.Url, item.Request.WholePlaylist)) item.Complete();
@@ -48,7 +49,7 @@ public sealed class DownloadService(ToolManager tools)
                 }
                 continue;
             }
-            else item.Fail(ErrorMessages.Friendly(lastError, exitCode));
+            else item.Fail(ErrorMessages.Explain(log, exitCode), TechnicalLog.Format(log));
             break;
         }
 
@@ -56,7 +57,7 @@ public sealed class DownloadService(ToolManager tools)
     }
 
     /// <summary>Runs yt-dlp once. Returns null when it couldn't even start (the item is already marked failed).</summary>
-    async Task<(int ExitCode, string? LastError)?> RunOnceAsync(DownloadItem item, CancellationToken token)
+    async Task<(int ExitCode, IReadOnlyList<string> Log)?> RunOnceAsync(DownloadItem item, CancellationToken token)
     {
         Process process;
         try
@@ -66,25 +67,22 @@ public sealed class DownloadService(ToolManager tools)
         }
         catch (Exception e) when (e is Win32Exception or IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            item.Fail($"Couldn't start the download: {e.Message}");
+            item.Fail(ErrorMessages.EngineDidNotStart(e.Message));
             return null;
         }
 
         using (process)
         {
-            string? lastError = null;
+            var log = new TechnicalLog();
             var meter = new TransferMeter();
             using (token.Register(() => Kill(process)))
             {
                 var stdout = PumpAsync(process.StandardOutput, line => Apply(item, OutputParser.Parse(line), meter));
-                var stderr = PumpAsync(process.StandardError, line =>
-                {
-                    if (line.StartsWith("ERROR:", StringComparison.Ordinal)) lastError = line;
-                });
+                var stderr = PumpAsync(process.StandardError, log.Add);
                 await Task.WhenAll(stdout, stderr);
                 await process.WaitForExitAsync(CancellationToken.None);
             }
-            return (process.ExitCode, lastError);
+            return (process.ExitCode, log.Lines);
         }
     }
 

@@ -114,7 +114,7 @@ public class ModelTests
         var changed = new List<string?>();
         item.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
 
-        item.Fail("boom");
+        item.Fail(new ErrorExplanation("Boom.", "Because.", ["Retry."]));
 
         Assert.Contains(nameof(DownloadItem.State), changed);
         Assert.Contains(nameof(DownloadItem.IsActive), changed);
@@ -173,37 +173,8 @@ public class ModelTests
     }
 }
 
-public class ErrorMessagesTests
+public class TransientErrorTests
 {
-    [Theory]
-    [InlineData("ERROR: [youtube] abcdefghijk: Private video. Sign in if you've been granted access", "This video is private.")]
-    [InlineData("ERROR: [youtube] abcdefghijk: Video unavailable", "This video is unavailable. It may be removed or blocked in your country.")]
-    [InlineData("ERROR: [youtube] abcdefghijk: Sign in to confirm you’re not a bot", "YouTube asked for a bot check. Wait a few minutes, click “Update yt-dlp” and retry.")]
-    [InlineData("ERROR: [youtube] abcdefghijk: Sign in to confirm your age", "This video is age-restricted, so YouTube requires signing in.")]
-    [InlineData("ERROR: unable to download video data: HTTP Error 403: Forbidden", "YouTube refused the download. Click “Update yt-dlp” and retry.")]
-    [InlineData("ERROR: Unsupported URL: https://example.com", "That link isn't supported. Paste a YouTube or SoundCloud link.")]
-    [InlineData("ERROR: [Errno 28] No space left on device", "Your disk is full.")]
-    [InlineData("ERROR: Postprocessing: Conversion failed!", "The download worked, but converting it failed. Click Retry, or try another format.")]
-    public void KnownErrorsGetFriendlyMessages(string raw, string expected)
-    {
-        Assert.Equal(expected, ErrorMessages.Friendly(raw, 1));
-    }
-
-    [Fact]
-    public void UnknownErrorsLoseTheirTechnicalPrefix()
-    {
-        Assert.Equal("Something odd happened", ErrorMessages.Friendly("ERROR: [youtube] abcdefghijk: Something odd happened", 1));
-    }
-
-    [Fact]
-    public void LongErrorsAreShortened()
-    {
-        var message = ErrorMessages.Friendly("ERROR: " + new string('x', 500), 1);
-
-        Assert.Equal(200, message.Length);
-        Assert.EndsWith("…", message);
-    }
-
     [Theory]
     [InlineData("ERROR: unable to download video data: HTTP Error 403: Forbidden", true)]
     [InlineData("ERROR: unable to download video data: HTTP Error 503: Service Unavailable", true)]
@@ -216,12 +187,6 @@ public class ErrorMessagesTests
     public void TransientErrorsAreRetriedOthersAreNot(string? error, bool expected)
     {
         Assert.Equal(expected, ErrorMessages.IsTransient(error));
-    }
-
-    [Fact]
-    public void MissingErrorMentionsExitCode()
-    {
-        Assert.Equal("Download failed (yt-dlp exit code 2).", ErrorMessages.Friendly(null, 2));
     }
 }
 

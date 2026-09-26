@@ -396,6 +396,55 @@ public partial class MainWindow : Window
         _ = RunAsync(item);
     }
 
+    void Why_Click(object sender, RoutedEventArgs e)
+    {
+        var item = ItemOf(sender);
+        item.ShowExplanation = !item.ShowExplanation;
+    }
+
+    void ToggleDetails_Click(object sender, RoutedEventArgs e)
+    {
+        var item = ItemOf(sender);
+        item.ShowTechnicalDetails = !item.ShowTechnicalDetails;
+    }
+
+    void CopyDetails_Click(object sender, RoutedEventArgs e)
+    {
+        if (CopyDetails(ItemOf(sender)))
+            ShowNotice("Technical details copied. Your Windows user folder appears as %USERPROFILE%, so they're safe to share.");
+    }
+
+    // Opens a new GitHub issue with the basics filled in. The log is copied first, so the user only has to paste it.
+    void Report_Click(object sender, RoutedEventArgs e)
+    {
+        var item = ItemOf(sender);
+        var copied = CopyDetails(item);
+        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "?";
+        var body =
+            $"**What happened:** {item.Error?.Summary}\n" +
+            $"**Format:** {item.FormatLabel}, quality {item.Request.Quality}\n" +
+            $"**YouLoader:** {version}\n\n" +
+            (copied ? "**Technical details** (already copied, paste them between the lines below):\n\n```\n\n```\n\n" : "") +
+            "**Anything else?** For example the link, if you're happy to share it.\n";
+        var title = Uri.EscapeDataString(item.Error?.Summary ?? "Download failed");
+        OpenUrl($"{SourceUrl}/issues/new?title={title}&body={Uri.EscapeDataString(body)}");
+    }
+
+    static bool CopyDetails(DownloadItem item)
+    {
+        if (item.TechnicalDetails is null) return false;
+        try
+        {
+            Clipboard.SetText(item.TechnicalDetails);
+            return true;
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            // Another app is holding the clipboard.
+            return false;
+        }
+    }
+
     void Play_Click(object sender, RoutedEventArgs e)
     {
         if (ItemOf(sender).FilePath is { } path && File.Exists(path))
