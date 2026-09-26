@@ -53,7 +53,7 @@ public partial class MainWindow : Window
         Loaded += async (_, _) => await PrepareToolsAsync();
         Activated += (_, _) => AutoPasteFromClipboard();
         Closing += OnClosing;
-        SourceInitialized += (_, _) => UseDarkTitleBar();
+        SourceInitialized += (_, _) => DarkTitleBar.Apply(this);
         FitToScreen();
     }
 
@@ -63,17 +63,6 @@ public partial class MainWindow : Window
         var available = SystemParameters.WorkArea.Height - 16;
         if (Height > available) Height = Math.Max(MinHeight, available);
     }
-
-    // Matches the Windows title bar to the dark window (Windows 10 20H1 and later).
-    void UseDarkTitleBar()
-    {
-        const int DwmwaUseImmersiveDarkMode = 20;
-        var enabled = 1;
-        DwmSetWindowAttribute(new WindowInteropHelper(this).Handle, DwmwaUseImmersiveDarkMode, ref enabled, sizeof(int));
-    }
-
-    [DllImport("dwmapi.dll")]
-    static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
     // ---- Settings ----
 
@@ -604,8 +593,27 @@ public partial class MainWindow : Window
 
     // ---- Closing ----
 
+    bool uninstalled;
+
+    void Uninstall_Click(object sender, RoutedEventArgs e)
+    {
+        if (Items.Any(i => i.IsActive))
+        {
+            MessageBox.Show(this, "Finish or cancel your downloads before uninstalling.", "YouLoader",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+        if (!UninstallFlow.Run(this, settings.OutputDir)) return;
+
+        uninstalled = true;
+        Application.Current.Shutdown();
+    }
+
     void OnClosing(object? sender, CancelEventArgs e)
     {
+        // Saving settings now would put back the folder the uninstaller just removed.
+        if (uninstalled) return;
+
         var running = Items.Count(i => i.IsActive);
         if (running > 0)
         {

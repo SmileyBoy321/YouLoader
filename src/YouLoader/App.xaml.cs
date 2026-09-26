@@ -9,6 +9,16 @@ public partial class App : Application
     {
         DispatcherUnhandledException += OnUnhandledException;
         base.OnStartup(e);
+
+        // YouLoader.exe --uninstall removes the app without opening the main window.
+        if (e.Args.Any(a => a.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)))
+        {
+            UninstallFlow.Run(null, Core.Services.AppSettings.Load().OutputDir);
+            Shutdown();
+            return;
+        }
+
+        new MainWindow().Show();
     }
 
     // Keep the app open after an unexpected error: running downloads shouldn't die with it.

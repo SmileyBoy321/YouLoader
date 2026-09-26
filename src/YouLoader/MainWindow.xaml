@@ -282,6 +282,9 @@
                 <Button x:Name="UpdateToolsButton" Content="Update yt-dlp" Style="{StaticResource LinkButton}" Click="UpdateTools_Click" />
                 <TextBlock Text="  ·  " Foreground="{StaticResource Muted}" FontSize="12" />
                 <Button Content="Source code" Style="{StaticResource LinkButton}" Click="Source_Click" />
+                <TextBlock Text="  ·  " Foreground="{StaticResource Muted}" FontSize="12" />
+                <Button Content="Uninstall…" Style="{StaticResource LinkButton}" Click="Uninstall_Click"
+                        ToolTip="Remove YouLoader, its settings and helper tools. Your downloads are kept." />
             </StackPanel>
             <TextBlock x:Name="ToolStatus" Foreground="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis" Text="Getting ready…" />

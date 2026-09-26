@@ -21,7 +21,7 @@ MP3 and MP4, with **no ads, no pop-ups, no sign-up and no tracking**.
 
 <br>
 
-<img src="docs/screenshot.png" width="620" alt="The YouLoader window: a box for YouTube links, MP3 and MP4 choices with quality options, and a download list with progress, speed and time left">
+<img src="docs/demo.gif" width="720" alt="YouLoader demo: three YouTube links are pasted, Download is pressed, two download at a time with progress, speed and time left, then all three are saved as MP3s with cover art">
 
 </div>
 
@@ -65,6 +65,7 @@ It follows the example of [VLC](https://www.videolan.org/): **free forever, no a
 - 💬 **Errors in plain English.** Every failed download has a **Why?** button that explains what happened and what to try, from “the file is open in another program” to “this video is private”.
 - 🔄 **Keeps working when YouTube changes.** The download engine, [yt-dlp](https://github.com/yt-dlp/yt-dlp), updates itself once a day, and short hiccups are retried automatically.
 - 🧳 **Portable.** One `.exe` that sets up everything it needs on first launch.
+- 🧹 **Clean uninstall.** One click removes the app, its settings, helper tools and temporary files, and never touches your downloads.
 
 ## Quick start
 
@@ -138,14 +139,24 @@ Windows 10 and 11 for now. The core is cross-platform .NET, so other versions ar
 <summary><b>How do I uninstall it?</b></summary>
 <br>
 
-Delete `YouLoader.exe`, plus the folders `%AppData%\YouLoader` (settings) and `%LocalAppData%\YouLoader` (helper tools). That's everything.
+Click **Uninstall…** at the bottom of the YouLoader window. It shows exactly what will be removed and how much space that frees, then deletes:
+
+- `YouLoader.exe` itself, a moment after the window closes
+- your settings in `%AppData%\YouLoader`
+- the helper tools in `%LocalAppData%\YouLoader`
+- the temporary files the app unpacks in `%TEMP%\.net\YouLoader`
+- YouLoader's hidden playlist-history files in your save folder
+
+**Your downloaded music and videos are never touched.** YouLoader never writes to the Windows registry, so there's nothing else to clean.
+
+You can also run `YouLoader.exe --uninstall` from a terminal or a shortcut.
 </details>
 
 ## Privacy
 
 - **No accounts, no analytics, no telemetry, no crash reporting.** Nothing about you or your downloads is ever sent anywhere.
 - YouLoader connects only to **YouTube** (to download what you ask for) and **GitHub** (to fetch its helper tools, update yt-dlp, and check for a new YouLoader version).
-- Settings live in `%AppData%\YouLoader\settings.json` on your PC.
+- Settings live in `%AppData%\YouLoader\settings.json` on your PC. **Uninstall…** removes every trace.
 
 > [!IMPORTANT]
 > **Please download responsibly.** Only download videos you own, videos that are openly licensed (for example Creative Commons or public domain), or videos you have permission to download. Respect creators and YouTube's terms of service.
