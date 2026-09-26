@@ -6,9 +6,7 @@
 
 **Downloads. Nothing else.**
 
-[Website](https://smileyboy321.github.io/YouLoader/)
-
-A free, open-source YouTube and SoundCloud downloader for Windows.<br>
+A free, open-source YouTube downloader for Windows.<br>
 MP3 and MP4, with no ads, no pop-ups, no sign-up and no tracking.
 
 [![Download](https://img.shields.io/github/v/release/SmileyBoy321/YouLoader?label=Download&style=for-the-badge&color=e8372c)](https://github.com/SmileyBoy321/YouLoader/releases/latest/download/YouLoader.exe)
@@ -28,7 +26,7 @@ It follows the example of [VLC](https://www.videolan.org/): **free forever, no a
 ## Features
 
 - **MP3 and MP4.** MP3 up to 320 kbps, which plays on every device and car stereo. MP4 from 480p up to 4K and 8K.
-- **Playlists, channels and SoundCloud sets** download into their own numbered folder. Paste the same link later and only new items are fetched.
+- **Playlists and channels** download into their own numbered folder. Paste the same link later and only new items are fetched.
 - **Cover art and tags** are embedded automatically, with thumbnails cropped square for music players.
 - **Several links at once**, two downloads in parallel, cancel and retry per item, and automatic retries when YouTube drops a connection.
 - **No accidental duplicates.** Pasting a video that's already in the list (however the link is written) is skipped, with a note saying so.
@@ -73,7 +71,7 @@ dotnet publish src/YouLoader -c Release -o dist     # portable dist/YouLoader.ex
 | `src/YouLoader.Core` | Everything testable: yt-dlp arguments, output parsing, tool management, the download queue model |
 | `src/YouLoader` | The WPF window |
 | `tests/YouLoader.Tests` | Unit tests, plus integration tests that run real downloads |
-| `website` | The landing page, published free on [GitHub Pages](https://smileyboy321.github.io/YouLoader/): `python website/build.py` builds it into `website/public` |
+| `website` | The landing page: `python website/build.py` builds it into `website/public`, which Cloudflare Pages serves |
 
 ## Releasing
 
@@ -84,7 +82,7 @@ git tag v2.0.1
 git push origin v2.0.1
 ```
 
-GitHub Actions runs the tests, builds `YouLoader.exe` and publishes it with its checksum. The website's download button always points at the newest release. Changes under `website/` are published to GitHub Pages automatically.
+GitHub Actions runs the tests, builds `YouLoader.exe` and publishes it with its checksum. The website's download button always points at the newest release.
 
 ## Please download responsibly
 

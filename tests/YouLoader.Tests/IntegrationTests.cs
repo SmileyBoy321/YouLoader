@@ -168,4 +168,118 @@ public class IntegrationTests(ToolsFixture fixture, Xunit.Abstractions.ITestOutp
         Assert.NotNull(fixture.Tools.JsRuntime);
         Assert.True(File.Exists(Path.Combine(fixture.Tools.FfmpegDir, "ffmpeg.exe")));
     }
+
+    [IntegrationFact]
+    public async Task Channel_DownloadsIntoANumberedFolder_AndARerunIsUpToDate()
+    {
+        // @jawed has a single 19-second video, which keeps this quick.
+        const string channel = "https://www.youtube.com/@jawed/videos";
+
+        var first = await DownloadAsync(Item(OutputFormat.Mp3, "320", url: channel, embedArt: false));
+
+        Assert.Equal(DownloadState.Done, first.State);
+        Assert.Equal(1, first.SavedFiles);
+        Assert.Equal("001 - Me at the zoo.mp3", Path.GetFileName(first.FilePath));
+        Assert.Equal("jawed - Videos", Path.GetFileName(Path.GetDirectoryName(first.FilePath)));
+
+        var archive = new FileInfo(Path.Combine(outputDir, ".youloader-mp3.archive"));
+        Assert.True(archive.Exists);
+        Assert.True(archive.Attributes.HasFlag(FileAttributes.Hidden), "the archive file should be hidden");
+
+        var second = await DownloadAsync(Item(OutputFormat.Mp3, "320", url: channel, embedArt: false));
+
+        Assert.Equal(DownloadState.Done, second.State);
+        Assert.Equal("Up to date · nothing new to download", second.Status);
+    }
+
+    [IntegrationFact]
+    public async Task SaveFolderWithSpacesAndEstonianLettersWorks()
+    {
+        var folder = Path.Combine(outputDir, "Muusika õäöü & šž");
+        var item = new DownloadItem(ShortVideo, new DownloadRequest(OutputFormat.Mp3, "320", false, true, folder));
+
+        await DownloadAsync(item);
+
+        Assert.Equal(DownloadState.Done, item.State);
+        Assert.Equal(Path.Combine(folder, "Me at the zoo.mp3"), item.FilePath);
+        Assert.True(File.Exists(item.FilePath));
+    }
+
+    [IntegrationFact]
+    public async Task UpdatingYtDlp_ReportsItsResult()
+    {
+        var result = await fixture.Tools.UpdateYtDlpAsync();
+
+        output.WriteLine(result);
+        Assert.False(string.IsNullOrWhiteSpace(result));
+        Assert.DoesNotContain("ERROR", result);
+    }
+}
+
+/// <summary>
+/// Simulates a brand-new PC: no ffmpeg and no JavaScript runtime on PATH, and an empty tools folder.
+/// Downloads about 200 MB, so it only runs when YOULOADER_FIRSTRUN=1.
+/// </summary>
+[CollectionDefinition("Changes PATH", DisableParallelization = true)]
+public sealed class ChangesPathCollection;
+
+[Collection("Changes PATH")]
+[Trait("Category", "Integration")]
+public class FirstRunTests(Xunit.Abstractions.ITestOutputHelper output) : IDisposable
+{
+    readonly string root = Path.Combine(Path.GetTempPath(), $"youloader-firstrun-{Guid.NewGuid():N}");
+
+    public void Dispose()
+    {
+        if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+    }
+
+    public sealed class FirstRunFactAttribute : FactAttribute
+    {
+        public FirstRunFactAttribute()
+        {
+            if (Environment.GetEnvironmentVariable("YOULOADER_FIRSTRUN") != "1")
+                Skip = "Set YOULOADER_FIRSTRUN=1 to simulate a first run on a clean PC (downloads ~200 MB).";
+        }
+    }
+
+    [FirstRunFact]
+    public async Task CleanPc_DownloadsEveryToolAndThenDownloadsASong()
+    {
+        var originalPath = Environment.GetEnvironmentVariable("PATH");
+        var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        Environment.SetEnvironmentVariable("PATH", $"{Path.Combine(windows, "System32")};{windows}");
+        try
+        {
+            var tools = new ToolManager(Path.Combine(root, "tools"));
+            var messages = new List<string>();
+
+            await tools.EnsureAsync(new SyncProgress(messages.Add));
+
+            foreach (var m in messages.Where(m => !m.Contains('%') || m.EndsWith("100%"))) output.WriteLine(m);
+            Assert.True(File.Exists(tools.YtDlpPath));
+            Assert.Equal(tools.ToolsDir, tools.FfmpegDir);
+            Assert.StartsWith("deno:", tools.JsRuntime);
+            Assert.Contains(messages, m => m.StartsWith("Downloading ffmpeg"));
+            Assert.Contains(messages, m => m.StartsWith("Downloading Deno"));
+            Assert.Empty(Directory.GetFiles(tools.ToolsDir, "*.zip"));
+
+            var item = new DownloadItem("https://www.youtube.com/watch?v=jNQXAC9IVRw",
+                new DownloadRequest(OutputFormat.Mp3, "320", false, true, Path.Combine(root, "out")));
+            await new DownloadService(tools).RunAsync(item);
+
+            Assert.Equal(DownloadState.Done, item.State);
+            Assert.True(File.Exists(item.FilePath));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("PATH", originalPath);
+        }
+    }
+
+    // Progress<T> posts to the thread pool; this reports immediately so the messages are all there afterwards.
+    sealed class SyncProgress(Action<string> report) : IProgress<string>
+    {
+        public void Report(string value) => report(value);
+    }
 }

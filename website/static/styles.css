@@ -14,11 +14,12 @@
   --rule: #d6cebd;
   --red: #e8372c;
   --red-ink: #b3241b;
+  --red-fill: #d43127;
   --band: #16140f;
   --band-ink: #f3efe6;
   --card: #fbf9f4;
   --shadow: #16140f;
-  --grain-opacity: 0.35;
+  --grain-opacity: 0.28;
 
   --serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
   --sans: "Geist", "Segoe UI", system-ui, sans-serif;
@@ -85,7 +86,6 @@ body::before {
   z-index: 100;
   opacity: var(--grain-opacity);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.27 0 0 0 0 0.2 0 0 0 0.22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: multiply;
 }
 
 img { max-width: 100%; height: auto; display: block; }
@@ -141,15 +141,15 @@ a:hover { color: var(--red-ink); }
 }
 
 .btn-primary {
-  background: var(--red);
-  border-color: var(--red);
+  background: var(--red-fill);
+  border-color: var(--red-fill);
   color: #fff;
   box-shadow: 4px 4px 0 var(--shadow);
 }
 .btn-primary:hover { color: #fff; transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--shadow); }
 .btn-primary:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--shadow); }
 .btn-primary svg { width: 20px; height: 20px; flex: none; }
-.btn-primary small { display: block; font: 400 12px/1.2 var(--mono); opacity: 0.85; margin-top: 4px; letter-spacing: 0.02em; }
+.btn-primary small { display: block; font: 400 12px/1.2 var(--mono); margin-top: 4px; letter-spacing: 0.02em; }
 
 .btn-ghost { background: transparent; color: var(--ink); }
 .btn-ghost:hover { background: var(--ink); color: var(--paper); }
@@ -285,7 +285,7 @@ a:hover { color: var(--red-ink); }
   flex-direction: column;
 }
 .format.recommended { box-shadow: 6px 6px 0 var(--red); }
-.format .tag { position: absolute; top: -12px; left: 20px; background: var(--red); color: #fff; font: 500 11px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 9px; border-radius: 999px; }
+.format .tag { position: absolute; top: -12px; left: 20px; background: var(--red-fill); color: #fff; font: 500 11px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 9px; border-radius: 999px; }
 .format .tag-ink { background: var(--ink); color: var(--paper); }
 .format h3 { font: 400 44px/1 var(--serif); margin: 4px 0 6px; }
 .format .what { font: 500 13px/1.4 var(--mono); color: var(--muted); margin: 0 0 16px; }

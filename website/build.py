@@ -2,11 +2,11 @@
 
     python website/build.py
 
-The site is hosted for free on GitHub Pages at https://smileyboy321.github.io/YouLoader/.
-To move it to your own domain later, set SITE_URL, e.g.
-    SITE_URL=https://youloader.app python website/build.py
-Everything that depends on the address comes from it: canonical links, the sitemap, social cards,
-and the path prefix ("/YouLoader") that GitHub Pages project sites need.
+The site is hosted on Cloudflare Pages. Set SITE_URL to the address it's served from, e.g.
+    SITE_URL=https://youloader.org python website/build.py
+In Cloudflare Pages: build command "python website/build.py", output directory "website/public",
+and an environment variable SITE_URL. Everything that depends on the address comes from it:
+canonical links, the sitemap, social cards, and a path prefix if the site ever lives in a subfolder.
 """
 
 from __future__ import annotations
@@ -29,11 +29,11 @@ PAGES = ROOT / "pages"
 STATIC = ROOT / "static"
 OUT = ROOT / "public"
 
-DEFAULT_SITE_URL = "https://smileyboy321.github.io/YouLoader"
+DEFAULT_SITE_URL = "https://youloader.pages.dev"
 SITE_URL = os.environ.get("SITE_URL") or DEFAULT_SITE_URL
 SITE_URL = SITE_URL.rstrip("/")
 
-# "/YouLoader" on GitHub Pages, "" on a domain of its own. Pages are written with root-relative links
+# "" on a domain of its own, or e.g. "/YouLoader" if the site is served from a subfolder. Pages are written with root-relative links
 # ("/assets/..."), and this prefix is added to them when the site is built.
 BASE_PATH = urlparse(SITE_URL).path.rstrip("/")
 
@@ -85,7 +85,7 @@ HOME_FAQ = [
      "<p>320 kbps, the default. It's the highest quality MP3 has, and it sounds the same as YouTube to virtually everyone. "
      "If you keep a big library on a small device, the ~245 kbps setting saves about a quarter of the space, and almost nobody can hear the difference.</p>"),
     ("Can it download whole playlists and channels?",
-     "<p>Yes. Playlist, channel, SoundCloud set and artist links download everything into their own numbered folder. "
+     "<p>Yes. Playlist and channel links download everything into their own numbered folder. "
      "Paste the same link again later and YouLoader fetches only what's new.</p>"),
     ("Why isn't there a web version?",
      "<p>Web converters run every download on their own servers. YouTube blocks those servers, and sending files to millions of people costs a lot of money. "
@@ -120,18 +120,10 @@ MP4_FAQ = [
      "<p>Not yet. It's on the list. If you'd like it sooner, say so on GitHub.</p>"),
 ]
 
-SOUNDCLOUD_FAQ = [
-    ("Can I download a whole SoundCloud playlist or album?",
-     "<p>Yes. Paste a set, album, artist or likes link. Tracks are saved into their own folder, and running the same link again grabs only new tracks.</p>"),
-    ("Why is the quality 128 kbps?",
-     "<p>That's what SoundCloud streams for most tracks. No downloader can get more than the site sends. "
-     "If the artist enabled SoundCloud's own Download button, use it: it's often the original file, and it supports the artist directly.</p>"),
-]
-
 PAGES_LIST = [
     Page("/", "index.html",
          "YouLoader: Free YouTube to MP3 & MP4 Downloader, No Ads",
-         "Download YouTube and SoundCloud as MP3 or MP4 with a free Windows app. No ads, no pop-ups, no sign-up, no tracking. Open source.",
+         "Download YouTube videos and playlists as MP3 or MP4 with a free Windows app. No ads, no pop-ups, no sign-up, no tracking. Open source.",
          faq=HOME_FAQ),
     Page("/youtube-to-mp3/", "youtube-to-mp3.html",
          "YouTube to MP3 Without Ads or Pop-ups · YouLoader",
@@ -141,10 +133,6 @@ PAGES_LIST = [
          "YouTube to MP4 in 1080p & 4K, No Ads · YouLoader",
          "Save YouTube videos as MP4 in 480p, 720p, 1080p or up to 4K and 8K. Free Windows app, no watermark, no ads, no pop-ups.",
          crumb="YouTube to MP4", faq=MP4_FAQ),
-    Page("/soundcloud-to-mp3/", "soundcloud-to-mp3.html",
-         "SoundCloud to MP3 Downloader, Free & Ad-Free · YouLoader",
-         "Download SoundCloud tracks, albums, playlists and artist pages as MP3. A free Windows app with no ads, no pop-ups and no sign-up.",
-         crumb="SoundCloud to MP3", faq=SOUNDCLOUD_FAQ),
     Page("/privacy/", "privacy.html",
          "Privacy · YouLoader",
          "YouLoader has no ads, no analytics and no tracking, on this website or in the app. Here's exactly what connects to what.",
@@ -170,7 +158,7 @@ DOWNLOAD_BUTTON = (
 HEADER = f"""<a class="skip" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="wrap">
-    <a class="brand" href="/" aria-label="YouLoader home"><img src="/assets/logo-512.png" alt="" width="30" height="30"><span>YouLoader</span></a>
+    <a class="brand" href="/" aria-label="YouLoader home"><img src="/assets/logo-64.png" alt="" width="30" height="30"><span>YouLoader</span></a>
     <nav class="nav" aria-label="Main">
       <a class="nav-optional" href="/#formats">Formats</a>
       <a class="nav-optional" href="/#why-free">Why free</a>
@@ -184,15 +172,14 @@ FOOTER = f"""<footer class="site-footer">
   <div class="wrap">
     <div class="footer-grid">
       <div class="about">
-        <a class="brand" href="/"><img src="/assets/logo-512.png" alt="" width="30" height="30" loading="lazy"><span>YouLoader</span></a>
-        <p>A free, open-source YouTube and SoundCloud downloader for Windows. No ads, no tracking, no nonsense.</p>
+        <a class="brand" href="/"><img src="/assets/logo-64.png" alt="" width="30" height="30" loading="lazy"><span>YouLoader</span></a>
+        <p>A free, open-source YouTube downloader for Windows. No ads, no tracking, no nonsense.</p>
       </div>
       <div>
         <h2>Download</h2>
         <ul>
           <li><a href="/youtube-to-mp3/">YouTube to MP3</a></li>
           <li><a href="/youtube-to-mp4/">YouTube to MP4</a></li>
-          <li><a href="/soundcloud-to-mp3/">SoundCloud to MP3</a></li>
         </ul>
       </div>
       <div>
@@ -349,6 +336,7 @@ def render(page: Page, css_version: str) -> str:
 
 ROOT_RELATIVE = re.compile(r'(?P<attr>\b(?:href|src|srcset)=")/(?!/)')
 CSS_ROOT_RELATIVE = re.compile(r'url\("/(?!/)')
+SRCSET = re.compile(r'srcset="[^"]*"')
 
 
 def with_base_path(text: str) -> str:
@@ -356,6 +344,7 @@ def with_base_path(text: str) -> str:
     if not BASE_PATH:
         return text
     text = ROOT_RELATIVE.sub(lambda m: f'{m.group("attr")}{BASE_PATH}/', text)
+    text = SRCSET.sub(lambda m: m.group(0).replace(", /", f", {BASE_PATH}/"), text)
     return CSS_ROOT_RELATIVE.sub(f'url("{BASE_PATH}/', text)
 
 

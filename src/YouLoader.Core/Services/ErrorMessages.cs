@@ -106,8 +106,8 @@ public static class ErrorMessages
 
         (["Unsupported URL", "is not a valid URL"], new(
             "YouLoader can't download from this link.",
-            "The link isn't a video, playlist or channel on a supported site, or part of it is missing.",
-            ["Copy the link again from the address bar or the Share button.", "YouTube and SoundCloud links work best."])),
+            "The link isn't a YouTube video, playlist or channel, or part of it is missing.",
+            ["Copy the link again from the address bar or the Share button."])),
 
         (["Requested format is not available"], new(
             "This quality isn't available for this video.",

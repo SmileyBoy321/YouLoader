@@ -4,8 +4,6 @@ public static class LinkParser
 {
     static readonly char[] Separators = [' ', '\t', '\r', '\n', ','];
 
-    static readonly string[] SoundCloudCollections = ["sets", "tracks", "likes", "albums", "reposts", "popular-tracks"];
-
     /// <summary>Pulls every http(s) link out of pasted text, whatever separates them.</summary>
     public static IReadOnlyList<string> ExtractUrls(string text) =>
         text.Split(Separators, StringSplitOptions.RemoveEmptyEntries)
@@ -14,13 +12,17 @@ public static class LinkParser
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
+    /// <summary>YouLoader only downloads from YouTube (including YouTube Music and youtu.be short links).</summary>
+    public static bool IsYouTubeUrl(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) && IsYouTube(uri.Host.ToLowerInvariant());
+
     public static bool IsHttpUrl(string text) =>
         Uri.TryCreate(text, UriKind.Absolute, out var uri)
         && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
 
     /// <summary>
     /// True when the link should download many files into their own folder: playlists, channels,
-    /// SoundCloud sets and artist pages. A video opened from inside a playlist only counts when the
+    /// A video opened from inside a playlist only counts when the
     /// user asked for the whole playlist.
     /// </summary>
     public static bool IsCollection(string url, bool wholePlaylist)
@@ -41,11 +43,6 @@ public static class LinkParser
             return hasList && wholePlaylist && !IsMix(list!);
         }
 
-        if (host == "soundcloud.com" || host.EndsWith(".soundcloud.com", StringComparison.Ordinal))
-        {
-            if (segments.Length == 1) return true;
-            return segments.Length >= 2 && SoundCloudCollections.Contains(segments[1]);
-        }
 
         return false;
     }

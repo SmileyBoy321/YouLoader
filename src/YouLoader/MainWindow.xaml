@@ -5,14 +5,23 @@
         WindowStartupLocation="CenterScreen" Icon="Assets/youloader.ico"
         Background="{StaticResource Bg}" Foreground="{StaticResource Text}"
         FontFamily="Segoe UI" FontSize="14"
-        TextOptions.TextFormattingMode="Display">
-    <Grid Margin="24,20,24,14">
+        TextOptions.TextFormattingMode="Display"
+        xmlns:local="clr-namespace:YouLoader">
+    <Window.Resources>
+        <local:AtLeastConverter x:Key="AtLeast" />
+    </Window.Resources>
+    <!-- Normally the page fills the window and only the download list scrolls. When the window is too short
+         for that (small laptop screens), the page keeps a minimum height and the whole window scrolls instead,
+         so the download list is never squeezed out of view. -->
+    <ScrollViewer x:Name="PageScroll" Padding="24,20,24,14" Focusable="False"
+                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <Grid Height="{Binding ViewportHeight, ElementName=PageScroll, Converter={StaticResource AtLeast}, ConverterParameter=720}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*" MinHeight="140" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -44,7 +53,7 @@
                              AutomationProperties.Name="Links to download" />
                     <TextBlock x:Name="UrlPlaceholder" IsHitTestVisible="False" Margin="12,9,90,0" TextWrapping="Wrap"
                                Foreground="{StaticResource Muted}"
-                               Text="Paste YouTube or SoundCloud links here. One per line, or a whole playlist." />
+                               Text="Paste YouTube links here. One per line, or a whole playlist." />
                     <Button Content="Paste" Style="{StaticResource GhostButton}" HorizontalAlignment="Right" VerticalAlignment="Bottom"
                             Margin="0,0,8,8" Click="Paste_Click" />
                 </Grid>
@@ -73,7 +82,7 @@
 
                 <WrapPanel Margin="2,6,0,0">
                     <CheckBox x:Name="PlaylistBox" Content="Whole playlist when a video link has one" Margin="0,0,24,6"
-                              ToolTip="Playlist, channel and SoundCloud set links always download everything into their own folder." />
+                              ToolTip="Playlist and channel links always download everything into their own folder." />
                     <CheckBox x:Name="EmbedArtBox" Content="Embed cover art &amp; tags" Margin="0,0,0,6" />
                 </WrapPanel>
 
@@ -268,4 +277,5 @@
                        TextTrimming="CharacterEllipsis" Text="Getting ready…" />
         </DockPanel>
     </Grid>
+    </ScrollViewer>
 </Window>

@@ -49,6 +49,14 @@ public partial class MainWindow : Window
         Activated += (_, _) => AutoPasteFromClipboard();
         Closing += OnClosing;
         SourceInitialized += (_, _) => UseDarkTitleBar();
+        FitToScreen();
+    }
+
+    // A 1366x768 laptop only has about 728 px above the taskbar; never open taller than the screen.
+    void FitToScreen()
+    {
+        var available = SystemParameters.WorkArea.Height - 16;
+        if (Height > available) Height = Math.Max(MinHeight, available);
     }
 
     // Matches the Windows title bar to the dark window (Windows 10 20H1 and later).
@@ -235,7 +243,7 @@ public partial class MainWindow : Window
         UrlBox.CaretIndex = UrlBox.Text.Length;
     }
 
-    // Saves a click: a freshly copied YouTube or SoundCloud link is waiting in the box when you switch back.
+    // Saves a click: a freshly copied YouTube link is waiting in the box when you switch back.
     // A newly copied link replaces one YouLoader pasted itself, but never overwrites what the user typed:
     // then it's added on a new line instead, so copying links one after another builds a list.
     void AutoPasteFromClipboard()
@@ -246,7 +254,7 @@ public partial class MainWindow : Window
             var text = Clipboard.GetText().Trim();
             if (text == lastClipboardLink || text.Length > 2000) return;
             var urls = LinkParser.ExtractUrls(text);
-            if (urls.Count == 0 || !urls.All(IsSupportedSite)) return;
+            if (urls.Count == 0 || !urls.All(LinkParser.IsYouTubeUrl)) return;
             lastClipboardLink = text;
 
             if (UrlBox.Text.Length == 0 || UrlBox.Text == autoPastedText)
@@ -266,10 +274,6 @@ public partial class MainWindow : Window
             // Another app is holding the clipboard; skip this time.
         }
     }
-
-    static bool IsSupportedSite(string url) =>
-        Uri.TryCreate(url, UriKind.Absolute, out var uri)
-        && (uri.Host.Contains("youtube.com") || uri.Host == "youtu.be" || uri.Host.EndsWith("soundcloud.com"));
 
     void AppendLinks(string text)
     {
@@ -301,8 +305,9 @@ public partial class MainWindow : Window
             settings.OutputDir);
 
         List<DownloadItem> alreadyListed = [];
+        var notYouTube = urls.Where(u => !LinkParser.IsYouTubeUrl(u)).ToList();
         var added = 0;
-        foreach (var url in urls)
+        foreach (var url in urls.Except(notYouTube))
         {
             var item = new DownloadItem(url, request);
 
@@ -323,21 +328,30 @@ public partial class MainWindow : Window
         autoPastedText = null;
         SaveSettings();
 
-        if (alreadyListed.Count == 0)
+        List<string> notes = [];
+        if (notYouTube.Count > 0)
         {
-            HideNotice();
-            QueueScroll.ScrollToTop();
-            return;
+            notes.Add(notYouTube.Count == 1
+                ? $"YouLoader only downloads from YouTube, so the {HostOf(notYouTube[0])} link was skipped."
+                : $"YouLoader only downloads from YouTube, so {notYouTube.Count} other links were skipped.");
+        }
+        if (alreadyListed.Count > 0)
+        {
+            notes.Add(alreadyListed.Count == 1
+                ? $"“{alreadyListed[0].Title}” is already in your list as {alreadyListed[0].FormatLabel}, so it wasn't added again. It's highlighted below."
+                : $"{alreadyListed.Count} links are already in your list in this format, so they weren't added again. They're highlighted below.");
         }
 
-        var skipped = alreadyListed.Count;
-        ShowNotice(skipped == 1
-            ? $"“{alreadyListed[0].Title}” is already in your list as {alreadyListed[0].FormatLabel}, so it wasn't added again. It's highlighted below."
-            : $"{skipped} links are already in your list in this format, so they weren't added again. They're highlighted below.");
+        if (notes.Count == 0) HideNotice();
+        else ShowNotice(string.Join(" ", notes));
+
         foreach (var item in alreadyListed) _ = HighlightAsync(item);
-        if (added == 0) BringIntoView(alreadyListed[0]);
+        if (added == 0 && alreadyListed.Count > 0) BringIntoView(alreadyListed[0]);
         else QueueScroll.ScrollToTop();
     }
+
+    static string HostOf(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.Host.Replace("www.", "") : url;
 
     // ---- Notices ----
 
@@ -516,7 +530,9 @@ public partial class MainWindow : Window
         if (running > 0)
         {
             var answer = MessageBox.Show(this,
-                $"{running} download(s) are still running. Quit and cancel them?",
+                running == 1
+                    ? "A download is still running. Quit and cancel it?"
+                    : $"{running} downloads are still running. Quit and cancel them?",
                 "YouLoader", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (answer != MessageBoxResult.Yes)
             {

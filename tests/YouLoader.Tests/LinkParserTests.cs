@@ -7,12 +7,12 @@ public class LinkParserTests
     [Fact]
     public void ExtractUrls_FindsLinksSeparatedByNewlinesSpacesAndCommas()
     {
-        var text = "https://youtu.be/a\r\nhttps://www.youtube.com/watch?v=b  https://soundcloud.com/x/y,https://youtu.be/c";
+        var text = "https://youtu.be/a\r\nhttps://www.youtube.com/watch?v=b  https://example.com/x/y,https://youtu.be/c";
 
         var urls = LinkParser.ExtractUrls(text);
 
         Assert.Equal(
-            ["https://youtu.be/a", "https://www.youtube.com/watch?v=b", "https://soundcloud.com/x/y", "https://youtu.be/c"],
+            ["https://youtu.be/a", "https://www.youtube.com/watch?v=b", "https://example.com/x/y", "https://youtu.be/c"],
             urls);
     }
 
@@ -47,10 +47,7 @@ public class LinkParserTests
     [InlineData("https://music.youtube.com/playlist?list=OLAK5", false, true)]
     [InlineData("https://m.youtube.com/watch?v=abc", true, false)]
     [InlineData("https://www.youtube.com/shorts/abc", true, false)]
-    [InlineData("https://soundcloud.com/artist", false, true)]
-    [InlineData("https://soundcloud.com/artist/sets/album", false, true)]
-    [InlineData("https://soundcloud.com/artist/tracks", false, true)]
-    [InlineData("https://soundcloud.com/artist/some-song", true, false)]
+    [InlineData("https://soundcloud.com/artist/sets/album", true, false)]
     [InlineData("https://example.com/video", true, false)]
     [InlineData("not a url", true, false)]
     public void IsCollection_RecognisesPlaylistsChannelsAndSets(string url, bool wholePlaylist, bool expected)
@@ -88,10 +85,27 @@ public class LinkParserTests
     public void OtherSitesIgnoreWwwAndTrailingSlashButKeepCase()
     {
         Assert.Equal(
-            LinkParser.DownloadKey("https://www.soundcloud.com/artist/Song/", false),
-            LinkParser.DownloadKey("https://soundcloud.com/artist/Song", false));
+            LinkParser.DownloadKey("https://www.example.com/artist/Song/", false),
+            LinkParser.DownloadKey("https://example.com/artist/Song", false));
         Assert.NotEqual(
             LinkParser.DownloadKey("https://example.com/Video", false),
             LinkParser.DownloadKey("https://example.com/video", false));
+    }
+
+    [Theory]
+    [InlineData("https://www.youtube.com/watch?v=abc", true)]
+    [InlineData("https://youtube.com/watch?v=abc", true)]
+    [InlineData("https://m.youtube.com/watch?v=abc", true)]
+    [InlineData("https://music.youtube.com/watch?v=abc", true)]
+    [InlineData("https://youtu.be/abc", true)]
+    [InlineData("https://www.youtube.com/@channel", true)]
+    [InlineData("https://soundcloud.com/artist/song", false)]
+    [InlineData("https://vimeo.com/123", false)]
+    [InlineData("https://notyoutube.com/watch?v=abc", false)]
+    [InlineData("https://youtube.com.evil.example/watch?v=abc", false)]
+    [InlineData("not a link", false)]
+    public void OnlyYouTubeLinksAreAccepted(string url, bool expected)
+    {
+        Assert.Equal(expected, LinkParser.IsYouTubeUrl(url));
     }
 }

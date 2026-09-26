@@ -73,7 +73,8 @@ class PageParser(HTMLParser):
             if "alt" not in a:
                 self.images_without_alt.append(a.get("src", ""))
         elif tag == "source" and a.get("srcset"):
-            self.assets.append(a["srcset"])
+            # "a.webp 520w, b.webp 786w": every candidate must exist
+            self.assets.extend(candidate.strip().split(" ")[0] for candidate in a["srcset"].split(","))
         elif tag == "script":
             if a.get("type") == "application/ld+json":
                 self._in_json_ld = True
@@ -205,11 +206,14 @@ def main() -> int:
         if "Content-Security-Policy" not in (resolve(page_path) if page_path != "/404.html" else PUBLIC / "404.html").read_text(encoding="utf-8"):
             errors.append(f"{page_path}: no Content-Security-Policy")
 
-    # Every root-relative link must carry the base path, or it breaks on GitHub Pages.
+    # Every root-relative link must carry the base path, or it breaks when the site lives in a subfolder.
     if build.BASE_PATH:
         for file in [*PUBLIC.rglob("*.html"), PUBLIC / "styles.css"]:
             text = file.read_text(encoding="utf-8")
-            if re.search(r'(?:href|src|srcset)="/(?!/)(?!' + re.escape(build.BASE_PATH.strip("/")) + r'/)', text) or 'url("/assets' in text:
+            prefix = re.escape(build.BASE_PATH.strip("/"))
+            if (re.search(r'(?:href|src|srcset)="/(?!/)(?!' + prefix + r'/)', text)
+                    or re.search(r'srcset="[^"]*, /(?!' + prefix + r'/)', text)
+                    or 'url("/assets' in text):
                 errors.append(f"{file.relative_to(PUBLIC)}: link without the {build.BASE_PATH} prefix")
 
     size = sum(f.stat().st_size for f in PUBLIC.rglob("*") if f.is_file())
