@@ -73,6 +73,30 @@ public class ModelTests
     }
 
     [Fact]
+    public void SameVideoAndFormatAreDuplicatesButOtherFormatsAreNot()
+    {
+        var request = new DownloadRequest(OutputFormat.Opus, "original", false, true, @"C:\Music");
+        var a = new DownloadItem("https://youtu.be/abc123", request);
+        var b = new DownloadItem("https://www.youtube.com/watch?v=abc123&t=5", request);
+        var asMp3 = new DownloadItem("https://youtu.be/abc123", request with { Format = OutputFormat.Mp3 });
+
+        Assert.Equal(a.Key, b.Key);
+        Assert.NotEqual(a.Key, asMp3.Key);
+    }
+
+    [Fact]
+    public void DownloadingWithoutNewTextKeepsTheLastStatus()
+    {
+        var item = NewItem();
+        item.ReportDownloading(10, "10% · 1.0 MB/s");
+
+        item.ReportDownloading(11, null);
+
+        Assert.Equal(11, item.Progress);
+        Assert.Equal("10% · 1.0 MB/s", item.Status);
+    }
+
+    [Fact]
     public void CompleteWithNoNewFilesSaysUpToDate()
     {
         var item = NewItem();
@@ -159,6 +183,7 @@ public class ErrorMessagesTests
     [InlineData("ERROR: unable to download video data: HTTP Error 403: Forbidden", "YouTube refused the download. Click “Update yt-dlp” and retry.")]
     [InlineData("ERROR: Unsupported URL: https://example.com", "That link isn't supported. Paste a YouTube or SoundCloud link.")]
     [InlineData("ERROR: [Errno 28] No space left on device", "Your disk is full.")]
+    [InlineData("ERROR: Postprocessing: Conversion failed!", "The download worked, but converting it failed. Click Retry, or try another format.")]
     public void KnownErrorsGetFriendlyMessages(string raw, string expected)
     {
         Assert.Equal(expected, ErrorMessages.Friendly(raw, 1));

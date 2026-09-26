@@ -6,6 +6,8 @@
 
 **Downloads. Nothing else.**
 
+[Website](https://smileyboy321.github.io/YouLoader/)
+
 A free, open-source YouTube and SoundCloud downloader for Windows.<br>
 Opus, MP3 and MP4, with no ads, no pop-ups, no sign-up and no tracking.
 
@@ -21,7 +23,7 @@ Opus, MP3 and MP4, with no ads, no pop-ups, no sign-up and no tracking.
 
 Search for “YouTube to MP3” and you get sites full of pop-unders, fake download buttons and “allow notifications” traps. YouLoader is the opposite: a small app that runs on your own PC, does one job well, and asks for nothing in return.
 
-It follows the example of [VLC](https://www.videolan.org/): **free forever, no ads, no tracking, open source.** If it's useful to you, you can [support it on Ko-fi](https://ko-fi.com/smileyboyy).
+It follows the example of [VLC](https://www.videolan.org/): **free forever, no ads, no tracking, open source.** There's nothing to buy and nothing to donate to. If it's useful, star the repo or tell a friend.
 
 ## Features
 
@@ -29,6 +31,8 @@ It follows the example of [VLC](https://www.videolan.org/): **free forever, no a
 - **Playlists, channels and SoundCloud sets** download into their own numbered folder. Paste the same link later and only new items are fetched.
 - **Cover art and tags** are embedded automatically, with thumbnails cropped square for music players.
 - **Several links at once**, two downloads in parallel, cancel and retry per item, and automatic retries when YouTube drops a connection.
+- **No accidental duplicates.** Pasting a video that's already in the list (however the link is written) is skipped, with a note saying so.
+- **Calm progress.** Speed and time left are averaged over a few seconds, so they count down smoothly instead of jumping around.
 - **Keeps working when YouTube changes.** YouLoader updates its download engine (yt-dlp) automatically once a day.
 - **Portable.** One `.exe`, nothing to install.
 
@@ -69,7 +73,7 @@ dotnet publish src/YouLoader -c Release -o dist     # portable dist/YouLoader.ex
 | `src/YouLoader.Core` | Everything testable: yt-dlp arguments, output parsing, tool management, the download queue model |
 | `src/YouLoader` | The WPF window |
 | `tests/YouLoader.Tests` | Unit tests, plus integration tests that run real downloads |
-| `website` | The landing page: `python website/build.py` builds it into `website/public` |
+| `website` | The landing page, published free on [GitHub Pages](https://smileyboy321.github.io/YouLoader/): `python website/build.py` builds it into `website/public` |
 
 ## Releasing
 
@@ -80,7 +84,7 @@ git tag v2.0.1
 git push origin v2.0.1
 ```
 
-GitHub Actions runs the tests, builds `YouLoader.exe` and publishes it with its checksum. The website's download button always points at the newest release.
+GitHub Actions runs the tests, builds `YouLoader.exe` and publishes it with its checksum. The website's download button always points at the newest release. Changes under `website/` are published to GitHub Pages automatically.
 
 ## Please download responsibly
 

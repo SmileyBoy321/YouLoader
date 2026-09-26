@@ -32,7 +32,7 @@ public static class LinkParser
 
         if (IsYouTube(host))
         {
-            var hasList = HasQueryValue(uri, "list");
+            var hasList = QueryValue(uri, "list") is not null;
             if (segments is ["playlist"]) return hasList;
             if (segments.Length > 0 && (segments[0].StartsWith('@') || segments[0] is "channel" or "c" or "user")) return true;
             return hasList && wholePlaylist;
@@ -47,12 +47,43 @@ public static class LinkParser
         return false;
     }
 
+    /// <summary>
+    /// Identifies what a link downloads, however it's written: youtu.be/ID, youtube.com/watch?v=ID&amp;t=30
+    /// and music.youtube.com/watch?v=ID are all the same video.
+    /// </summary>
+    public static string DownloadKey(string url, bool wholePlaylist)
+    {
+        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri)) return url.Trim();
+
+        var host = uri.Host.ToLowerInvariant();
+        if (IsYouTube(host))
+        {
+            var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            var list = QueryValue(uri, "list");
+            if (list is not null && IsCollection(url, wholePlaylist)) return "youtube:list:" + list;
+
+            var id = host == "youtu.be"
+                ? segments.FirstOrDefault()
+                : segments.Length >= 2 && segments[0] is "shorts" or "live" or "embed" ? segments[1]
+                : QueryValue(uri, "v");
+            if (id is not null) return "youtube:" + id;
+        }
+
+        var path = uri.AbsolutePath.TrimEnd('/');
+        var cleanHost = host.StartsWith("www.", StringComparison.Ordinal) || host.StartsWith("m.", StringComparison.Ordinal)
+            ? host[(host.IndexOf('.') + 1)..]
+            : host;
+        return cleanHost + path + uri.Query;
+    }
+
+    static string? QueryValue(Uri uri, string key) =>
+        uri.Query.TrimStart('?')
+            .Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Where(pair => pair.StartsWith(key + "=", StringComparison.Ordinal) && pair.Length > key.Length + 1)
+            .Select(pair => Uri.UnescapeDataString(pair[(key.Length + 1)..]))
+            .FirstOrDefault();
+
     static bool IsYouTube(string host) =>
         host is "youtube.com" or "youtu.be" or "youtube-nocookie.com"
         || host.EndsWith(".youtube.com", StringComparison.Ordinal);
-
-    static bool HasQueryValue(Uri uri, string key) =>
-        uri.Query.TrimStart('?')
-            .Split('&', StringSplitOptions.RemoveEmptyEntries)
-            .Any(pair => pair.StartsWith(key + "=", StringComparison.Ordinal) && pair.Length > key.Length + 1);
 }

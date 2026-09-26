@@ -73,9 +73,10 @@ public sealed class DownloadService(ToolManager tools)
         using (process)
         {
             string? lastError = null;
+            var meter = new TransferMeter();
             using (token.Register(() => Kill(process)))
             {
-                var stdout = PumpAsync(process.StandardOutput, line => Apply(item, OutputParser.Parse(line)));
+                var stdout = PumpAsync(process.StandardOutput, line => Apply(item, OutputParser.Parse(line), meter));
                 var stderr = PumpAsync(process.StandardError, line =>
                 {
                     if (line.StartsWith("ERROR:", StringComparison.Ordinal)) lastError = line;
@@ -117,13 +118,14 @@ public sealed class DownloadService(ToolManager tools)
         return psi;
     }
 
-    static void Apply(DownloadItem item, OutputEvent? output)
+    static void Apply(DownloadItem item, OutputEvent? output, TransferMeter meter)
     {
         switch (output)
         {
             case DownloadProgress progress:
                 item.Title = progress.DisplayTitle;
-                item.ReportDownloading(progress.Percent, OutputParser.Describe(progress, item.Request.Format));
+                var reading = meter.Update(DateTime.UtcNow, progress.DownloadedBytes, progress.TotalBytes);
+                item.ReportDownloading(progress.Percent, reading is null ? null : OutputParser.Describe(progress, item.Request.Format, reading));
                 break;
             case ProcessingStep step:
                 item.ReportProcessing(OutputParser.DescribeStep(step.Name, item.Request.Format));

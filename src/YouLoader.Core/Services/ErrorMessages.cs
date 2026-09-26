@@ -18,6 +18,8 @@ public static partial class ErrorMessages
         ("is not a valid URL", "That doesn't look like a valid link."),
         ("Requested format is not available", "That quality isn't available for this video. Try another quality."),
         ("No space left", "Your disk is full."),
+        ("Conversion failed", "The download worked, but converting it failed. Click Retry, or try another format."),
+        ("ffmpeg not found", "A helper tool (ffmpeg) is missing. Click “Retry setup” at the bottom of the window."),
         ("getaddrinfo", "Couldn't reach the site. Check your internet connection."),
         ("Unable to download webpage", "Couldn't reach the site. Check your internet connection."),
     ];

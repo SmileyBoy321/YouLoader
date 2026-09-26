@@ -2,9 +2,11 @@
 
     python website/build.py
 
-Set SITE_URL to the real domain before deploying, e.g.
+The site is hosted for free on GitHub Pages at https://smileyboy321.github.io/YouLoader/.
+To move it to your own domain later, set SITE_URL, e.g.
     SITE_URL=https://youloader.app python website/build.py
-Everything that depends on the domain (canonical links, sitemap, social cards) comes from it.
+Everything that depends on the address comes from it: canonical links, the sitemap, social cards,
+and the path prefix ("/YouLoader") that GitHub Pages project sites need.
 """
 
 from __future__ import annotations
@@ -20,14 +22,20 @@ import sys
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent
 PAGES = ROOT / "pages"
 STATIC = ROOT / "static"
 OUT = ROOT / "public"
 
-PLACEHOLDER_URL = "https://youloader.example"
-SITE_URL = os.environ.get("SITE_URL", PLACEHOLDER_URL).rstrip("/")
+DEFAULT_SITE_URL = "https://smileyboy321.github.io/YouLoader"
+SITE_URL = os.environ.get("SITE_URL") or DEFAULT_SITE_URL
+SITE_URL = SITE_URL.rstrip("/")
+
+# "/YouLoader" on GitHub Pages, "" on a domain of its own. Pages are written with root-relative links
+# ("/assets/..."), and this prefix is added to them when the site is built.
+BASE_PATH = urlparse(SITE_URL).path.rstrip("/")
 
 
 def app_version() -> str:
@@ -43,7 +51,6 @@ VERSION = app_version()
 GITHUB = "https://github.com/SmileyBoy321/YouLoader"
 DOWNLOAD_URL = f"{GITHUB}/releases/latest/download/YouLoader.exe"
 RELEASES_URL = f"{GITHUB}/releases"
-DONATE_URL = "https://ko-fi.com/smileyboyy"
 SITE_NAME = "YouLoader"
 
 
@@ -64,12 +71,12 @@ class Page:
 HOME_FAQ = [
     ("Is YouLoader really free?",
      "<p>Yes. There's no trial, no premium tier, no ads and nothing to buy inside the app. "
-     "It's open source under the MIT license. Donations are welcome but never required.</p>"),
+     "It's open source under the MIT license. There's nothing to pay for, and nobody to donate to.</p>"),
     ("Is it safe? Why does Windows show a warning?",
      f"<p>All the code is public on <a href=\"{GITHUB}\">GitHub</a>, and every release is built automatically from that code by GitHub Actions. "
      "You can compare the file's SHA-256 checksum with the one on the release page.</p>"
      "<p>YouLoader isn't code-signed yet, so Windows SmartScreen may say “Windows protected your PC” the first time. "
-     "Click <strong>More info</strong>, then <strong>Run anyway</strong>. A signing certificate is first on the donation wishlist.</p>"),
+     "Click <strong>More info</strong>, then <strong>Run anyway</strong>. Code signing is planned through a free program for open-source projects.</p>"),
     ("Why does it download yt-dlp and ffmpeg the first time it starts?",
      "<p>YouLoader is the friendly front end. The heavy lifting is done by two respected open-source tools: "
      "<a href=\"https://github.com/yt-dlp/yt-dlp\">yt-dlp</a> fetches the media and <a href=\"https://ffmpeg.org\">ffmpeg</a> converts it. "
@@ -186,7 +193,6 @@ HEADER = f"""<a class="skip" href="#main">Skip to content</a>
       <a class="nav-optional" href="/#why-free">Why free</a>
       <a class="nav-optional" href="/#faq">FAQ</a>
       <a href="{GITHUB}">GitHub</a>
-      <a class="nav-donate" href="{DONATE_URL}">♥ Donate</a>
     </nav>
   </div>
 </header>"""
@@ -222,7 +228,6 @@ FOOTER = f"""<footer class="site-footer">
           <li><a href="{GITHUB}">Source code</a></li>
           <li><a href="{RELEASES_URL}">All releases</a></li>
           <li><a href="{GITHUB}/issues">Report a problem</a></li>
-          <li><a href="{DONATE_URL}">Donate</a></li>
         </ul>
       </div>
     </div>
@@ -303,7 +308,6 @@ def render(page: Page, css_version: str) -> str:
         "{{download_url}}": DOWNLOAD_URL,
         "{{github}}": GITHUB,
         "{{releases}}": RELEASES_URL,
-        "{{donate}}": DONATE_URL,
         "{{version}}": VERSION,
         "{{faq}}": render_faq(page.faq),
         "{{crumbs}}": f'<nav class="crumbs" aria-label="Breadcrumb"><a href="/">YouLoader</a> / {html.escape(page.crumb)}</nav>',
@@ -332,6 +336,7 @@ def render(page: Page, css_version: str) -> str:
 <title>{title}</title>
 <meta name="description" content="{description}">
 <meta name="robots" content="{robots}">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; font-src 'self'; script-src 'none'; base-uri 'none'; form-action 'none'">
 {canonical}<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#f3efe6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#13120f" media="(prefers-color-scheme: dark)">
@@ -361,6 +366,18 @@ def render(page: Page, css_version: str) -> str:
 """
 
 
+ROOT_RELATIVE = re.compile(r'(?P<attr>\b(?:href|src|srcset)=")/(?!/)')
+CSS_ROOT_RELATIVE = re.compile(r'url\("/(?!/)')
+
+
+def with_base_path(text: str) -> str:
+    """Points root-relative links at the site's folder, e.g. /assets/x.png -> /YouLoader/assets/x.png."""
+    if not BASE_PATH:
+        return text
+    text = ROOT_RELATIVE.sub(lambda m: f'{m.group("attr")}{BASE_PATH}/', text)
+    return CSS_ROOT_RELATIVE.sub(f'url("{BASE_PATH}/', text)
+
+
 def last_modified(source: Path) -> str:
     """Date of the last commit that touched a page, so the sitemap only changes when content does."""
     try:
@@ -388,9 +405,6 @@ def robots() -> str:
 
 
 def build() -> None:
-    if SITE_URL == PLACEHOLDER_URL:
-        print(f"warning: SITE_URL is not set; using {PLACEHOLDER_URL}. Set it to the real domain before deploying.", file=sys.stderr)
-
     # Empty the folder rather than deleting it, so a local preview server can keep serving from it.
     OUT.mkdir(exist_ok=True)
     for child in OUT.iterdir():
@@ -402,7 +416,10 @@ def build() -> None:
     for page in PAGES_LIST:
         target = OUT / "404.html" if page.path == "/404.html" else OUT / page.path.strip("/") / "index.html"
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(render(page, css_version), encoding="utf-8")
+        target.write_text(with_base_path(render(page, css_version)), encoding="utf-8")
+
+    styles = OUT / "styles.css"
+    styles.write_text(with_base_path(styles.read_text(encoding="utf-8")), encoding="utf-8")
 
     (OUT / "sitemap.xml").write_text(sitemap(PAGES_LIST), encoding="utf-8")
     (OUT / "robots.txt").write_text(robots(), encoding="utf-8")

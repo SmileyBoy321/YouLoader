@@ -10,7 +10,7 @@ public static class YtDlpArguments
 
     // Machine-readable progress lines that OutputParser understands. The title goes last because it may contain '|'.
     public const string DownloadProgressTemplate =
-        "download:[dl]%(progress._percent_str)s|%(progress._speed_str)s|%(progress._eta_str)s|%(info.vcodec)s|%(info.playlist_index|)s|%(info.n_entries|)s|%(info.title)s";
+        "download:[dl]%(progress.downloaded_bytes|0)s|%(progress.total_bytes,progress.total_bytes_estimate|)s|%(info.vcodec)s|%(info.playlist_index|)s|%(info.n_entries|)s|%(info.title)s";
     public const string ProcessingTemplate = "postprocess:[pp]%(progress.postprocessor)s";
     public const string SavedFileTemplate = "after_move:[file]%(filepath)s";
 

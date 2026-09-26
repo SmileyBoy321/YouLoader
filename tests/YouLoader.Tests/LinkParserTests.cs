@@ -55,4 +55,41 @@ public class LinkParserTests
     {
         Assert.Equal(expected, LinkParser.IsCollection(url, wholePlaylist));
     }
+
+    [Theory]
+    [InlineData("https://www.youtube.com/watch?v=abc123")]
+    [InlineData("https://youtu.be/abc123")]
+    [InlineData("https://youtu.be/abc123?t=42")]
+    [InlineData("https://m.youtube.com/watch?v=abc123&t=30s")]
+    [InlineData("https://music.youtube.com/watch?v=abc123&feature=share")]
+    [InlineData("https://www.youtube.com/shorts/abc123")]
+    [InlineData("https://www.youtube.com/watch?v=abc123&list=PL1")]
+    public void SameVideoWrittenDifferentlyGetsTheSameKey(string url)
+    {
+        Assert.Equal("youtube:abc123", LinkParser.DownloadKey(url, wholePlaylist: false));
+    }
+
+    [Fact]
+    public void VideoInsideAPlaylistIsKeyedByThePlaylistWhenDownloadingItWhole()
+    {
+        Assert.Equal("youtube:list:PL1", LinkParser.DownloadKey("https://www.youtube.com/watch?v=abc123&list=PL1", wholePlaylist: true));
+        Assert.Equal("youtube:list:PL1", LinkParser.DownloadKey("https://www.youtube.com/playlist?list=PL1", wholePlaylist: false));
+    }
+
+    [Fact]
+    public void DifferentVideosGetDifferentKeys()
+    {
+        Assert.NotEqual(LinkParser.DownloadKey("https://youtu.be/aaa", false), LinkParser.DownloadKey("https://youtu.be/bbb", false));
+    }
+
+    [Fact]
+    public void OtherSitesIgnoreWwwAndTrailingSlashButKeepCase()
+    {
+        Assert.Equal(
+            LinkParser.DownloadKey("https://www.soundcloud.com/artist/Song/", false),
+            LinkParser.DownloadKey("https://soundcloud.com/artist/Song", false));
+        Assert.NotEqual(
+            LinkParser.DownloadKey("https://example.com/Video", false),
+            LinkParser.DownloadKey("https://example.com/video", false));
+    }
 }

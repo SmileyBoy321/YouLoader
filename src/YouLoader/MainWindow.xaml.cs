@@ -18,7 +18,6 @@ namespace YouLoader;
 public partial class MainWindow : Window
 {
     const int MaxParallelDownloads = 2;
-    const string DonateUrl = "https://ko-fi.com/smileyboyy";
     const string SourceUrl = "https://github.com/SmileyBoy321/YouLoader";
 
     static readonly Dictionary<OutputFormat, string> FormatHints = new()
@@ -289,16 +288,79 @@ public partial class MainWindow : Window
             EmbedArtBox.IsChecked == true,
             settings.OutputDir);
 
+        List<DownloadItem> alreadyListed = [];
+        var added = 0;
         foreach (var url in urls)
         {
             var item = new DownloadItem(url, request);
+
+            // The same video in the same format is already downloading or done: point at it instead of adding a copy.
+            var existing = Items.FirstOrDefault(i => i.Key == item.Key && (i.IsActive || i.IsDone));
+            if (existing is not null)
+            {
+                if (!alreadyListed.Contains(existing)) alreadyListed.Add(existing);
+                continue;
+            }
+
             Items.Insert(0, item);
             _ = RunAsync(item);
+            added++;
         }
 
-        QueueScroll.ScrollToTop();
         UrlBox.Clear();
         SaveSettings();
+
+        if (alreadyListed.Count == 0)
+        {
+            HideNotice();
+            QueueScroll.ScrollToTop();
+            return;
+        }
+
+        var skipped = alreadyListed.Count;
+        ShowNotice(skipped == 1
+            ? $"“{alreadyListed[0].Title}” is already in your list as {alreadyListed[0].FormatLabel}, so it wasn't added again. It's highlighted below."
+            : $"{skipped} links are already in your list in this format, so they weren't added again. They're highlighted below.");
+        foreach (var item in alreadyListed) _ = HighlightAsync(item);
+        if (added == 0) BringIntoView(alreadyListed[0]);
+        else QueueScroll.ScrollToTop();
+    }
+
+    // ---- Notices ----
+
+    CancellationTokenSource? noticeTimer;
+
+    async void ShowNotice(string text)
+    {
+        NoticeText.Text = text;
+        NoticeBar.Visibility = Visibility.Visible;
+
+        noticeTimer?.Cancel();
+        var timer = noticeTimer = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(8), timer.Token);
+            HideNotice();
+        }
+        catch (TaskCanceledException)
+        {
+            // A newer notice replaced this one.
+        }
+    }
+
+    void HideNotice() => NoticeBar.Visibility = Visibility.Collapsed;
+
+    static async Task HighlightAsync(DownloadItem item)
+    {
+        item.IsHighlighted = true;
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        item.IsHighlighted = false;
+    }
+
+    void BringIntoView(DownloadItem item)
+    {
+        if (QueueList.ItemContainerGenerator.ContainerFromItem(item) is FrameworkElement container)
+            container.BringIntoView();
     }
 
     async Task RunAsync(DownloadItem item)
@@ -379,8 +441,6 @@ public partial class MainWindow : Window
     }
 
     // ---- Links out ----
-
-    void Donate_Click(object sender, RoutedEventArgs e) => OpenUrl(DonateUrl);
 
     void Source_Click(object sender, RoutedEventArgs e) => OpenUrl(SourceUrl);
 

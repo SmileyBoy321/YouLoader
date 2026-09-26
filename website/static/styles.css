@@ -120,7 +120,6 @@ a:hover { color: var(--red-ink); }
 .nav { display: flex; align-items: center; gap: clamp(12px, 2.5vw, 28px); font-size: 15px; flex-wrap: wrap; }
 .nav a { text-decoration: none; color: var(--ink-2); }
 .nav a:hover { color: var(--ink); text-decoration: underline; }
-.nav .nav-donate { color: var(--red-ink); font-weight: 500; }
 
 @media (max-width: 640px) {
   .nav .nav-optional { display: none; }
@@ -321,7 +320,7 @@ a:hover { color: var(--red-ink); }
 .story .aside { color: var(--ink-2); }
 .story .aside p { margin: 0 0 16px; }
 
-.donate-card {
+.help-card {
   margin-top: 24px;
   background: var(--card);
   border: 1.5px solid var(--ink);
@@ -329,10 +328,10 @@ a:hover { color: var(--red-ink); }
   padding: 22px;
   box-shadow: 6px 6px 0 var(--shadow);
 }
-.donate-card h3 { font: 400 30px/1.05 var(--serif); margin: 0 0 8px; }
-.donate-card p { margin: 0 0 16px; color: var(--ink-2); }
-.donate-card .btn { padding: 12px 20px; font-size: 15px; }
-.donate-card .btn + .btn { margin-left: 8px; }
+.help-card h3 { font: 400 30px/1.05 var(--serif); margin: 0 0 8px; }
+.help-card p { margin: 0 0 16px; color: var(--ink-2); }
+.help-card .btn { padding: 12px 20px; font-size: 15px; }
+.help-card .btn + .btn { margin-left: 8px; }
 
 @media (max-width: 800px) {
   .story { grid-template-columns: 1fr; }

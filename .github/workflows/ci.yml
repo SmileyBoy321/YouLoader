@@ -44,7 +44,8 @@ jobs:
 
       - name: Build and check the site
         env:
-          SITE_URL: ${{ vars.SITE_URL || 'https://youloader.example' }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          PRIVATE_WORDS: ${{ secrets.PRIVATE_WORDS }}
         run: |
           python website/build.py
           python website/test_site.py

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using YouLoader.Core.Services;
 
 namespace YouLoader.Core.Models;
 
@@ -21,12 +22,23 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
     double progress;
     DownloadState state = DownloadState.Queued;
     string? filePath;
+    bool isHighlighted;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public string Url { get; } = url;
     public DownloadRequest Request { get; } = request;
     public string FormatLabel => Request.Format.ToString().ToUpperInvariant();
+
+    /// <summary>Same key = same download: the same video (however the link is written) in the same format.</summary>
+    public string Key { get; } = $"{LinkParser.DownloadKey(url, request.WholePlaylist)}|{request.Format}";
+
+    /// <summary>Briefly true to draw attention to this item, e.g. when a duplicate of it was skipped.</summary>
+    public bool IsHighlighted
+    {
+        get => isHighlighted;
+        set => Set(ref isHighlighted, value);
+    }
     public CancellationTokenSource Cancellation { get; private set; } = new();
     public int SavedFiles { get; private set; }
 
@@ -77,11 +89,12 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
         Status = "Starting…";
     }
 
-    public void ReportDownloading(double percent, string text)
+    /// <param name="text">New status text, or null to keep the current one.</param>
+    public void ReportDownloading(double percent, string? text)
     {
         State = DownloadState.Downloading;
         Progress = Math.Clamp(percent, 0, 100);
-        Status = text;
+        if (text is not null) Status = text;
     }
 
     public void ReportRetrying(int attempt, int maxAttempts)

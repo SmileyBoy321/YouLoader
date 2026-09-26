@@ -6,14 +6,15 @@ namespace YouLoader.Core.Services;
 public abstract record OutputEvent;
 
 public sealed record DownloadProgress(
-    double Percent,
-    string? Speed,
-    string? Eta,
+    long DownloadedBytes,
+    long? TotalBytes,
     bool IsVideoStream,
     int? PlaylistIndex,
     int? PlaylistCount,
     string Title) : OutputEvent
 {
+    public double Percent => TotalBytes is > 0 ? Math.Clamp(100.0 * DownloadedBytes / TotalBytes.Value, 0, 100) : 0;
+
     public string DisplayTitle => PlaylistIndex is { } index && PlaylistCount is { } count
         ? $"({index}/{count}) {Title}"
         : Title;
@@ -34,31 +35,38 @@ public static class OutputParser
         return null;
     }
 
+    // downloaded|total|vcodec|playlist index|playlist count|title
     static DownloadProgress? ParseProgress(string body)
     {
-        var parts = body.Split('|', 7);
-        if (parts.Length < 7) return null;
+        var parts = body.Split('|', 6);
+        if (parts.Length < 6) return null;
 
-        double.TryParse(parts[0].Trim().TrimEnd('%'), NumberStyles.Float, CultureInfo.InvariantCulture, out var percent);
-        var vcodec = parts[3].Trim();
-
+        var vcodec = parts[2].Trim();
         return new DownloadProgress(
-            percent,
-            Known(parts[1]),
-            Known(parts[2]),
+            (long)(ParseNumber(parts[0]) ?? 0),
+            ParseNumber(parts[1]) is { } total ? (long)total : null,
             IsVideoStream: vcodec.Length > 0 && vcodec is not ("none" or "NA"),
-            ParseInt(parts[4]),
-            ParseInt(parts[5]),
-            parts[6].Trim());
+            (int?)ParseNumber(parts[3]),
+            (int?)ParseNumber(parts[4]),
+            parts[5].Trim());
     }
 
-    public static string Describe(DownloadProgress progress, OutputFormat format)
+    /// <summary>The status line under the progress bar, e.g. "Video · 45% · 30.1 of 68.0 MB · 4.4 MB/s · 0:12 left".</summary>
+    public static string Describe(DownloadProgress progress, OutputFormat format, TransferReading reading)
     {
         List<string> pieces = [];
         if (format == OutputFormat.Mp4) pieces.Add(progress.IsVideoStream ? "Video" : "Audio");
-        pieces.Add($"{progress.Percent.ToString("0.0", CultureInfo.InvariantCulture)}%");
-        if (progress.Speed is { } speed) pieces.Add(speed);
-        if (progress.Eta is { } eta) pieces.Add($"{eta} left");
+        if (progress.TotalBytes is > 0)
+        {
+            pieces.Add($"{Math.Floor(progress.Percent).ToString(CultureInfo.InvariantCulture)}%");
+            pieces.Add(TransferMeter.FormatProgress(progress.DownloadedBytes, progress.TotalBytes.Value));
+        }
+        else
+        {
+            pieces.Add(TransferMeter.FormatBytes(progress.DownloadedBytes));
+        }
+        if (reading.BytesPerSecond is { } speed) pieces.Add($"{TransferMeter.FormatBytes(speed)}/s");
+        if (reading.TimeLeft is { } left) pieces.Add($"{TransferMeter.FormatTimeLeft(left)} left");
         return string.Join(" · ", pieces);
     }
 
@@ -73,13 +81,7 @@ public static class OutputParser
         _ => "Processing…",
     };
 
-    // yt-dlp prints NA or Unknown when it can't estimate speed or time left yet.
-    static string? Known(string value)
-    {
-        var trimmed = value.Trim();
-        return trimmed is "" or "NA" or "N/A" or "Unknown" or "Unknown B/s" ? null : trimmed;
-    }
-
-    static int? ParseInt(string value) =>
-        int.TryParse(value.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var number) ? number : null;
+    // yt-dlp prints NA (or nothing, with our "|" defaults) when a number isn't known yet.
+    static double? ParseNumber(string value) =>
+        double.TryParse(value.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : null;
 }

@@ -24,7 +24,7 @@ public sealed class ToolsFixture : IAsyncLifetime
 }
 
 [Trait("Category", "Integration")]
-public class IntegrationTests(ToolsFixture fixture) : IClassFixture<ToolsFixture>, IDisposable
+public class IntegrationTests(ToolsFixture fixture, Xunit.Abstractions.ITestOutputHelper output) : IClassFixture<ToolsFixture>, IDisposable
 {
     // "Me at the zoo": the first YouTube video. 19 seconds long, so tests stay quick.
     const string ShortVideo = "https://www.youtube.com/watch?v=jNQXAC9IVRw";
@@ -141,6 +141,31 @@ public class IntegrationTests(ToolsFixture fixture) : IClassFixture<ToolsFixture
 
         Assert.Equal(DownloadState.Canceled, item.State);
         Assert.Empty(Directory.EnumerateFiles(outputDir, "*.mp4"));
+    }
+
+    [IntegrationFact]
+    public async Task StatusText_RefreshesCalmly_DuringARealDownload()
+    {
+        // 720p of Big Buck Bunny: about 70 MB, long enough to watch speed and time left settle.
+        var item = Item(OutputFormat.Mp4, "720", url: LongVideo, embedArt: false);
+        var updates = new List<(DateTime At, string Status)>();
+        item.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(DownloadItem.Status) && item.State == DownloadState.Downloading)
+                updates.Add((DateTime.UtcNow, item.Status));
+        };
+
+        await DownloadAsync(item);
+
+        Assert.Equal(DownloadState.Done, item.State);
+        foreach (var (at, status) in updates) output.WriteLine($"{at:HH:mm:ss.fff}  {status}");
+
+        var progressUpdates = updates.Where(u => u.Status.Contains("% ·")).ToList();
+        Assert.NotEmpty(progressUpdates);
+        // Each file (video, then audio) starts a fresh meter, which may refresh right away; otherwise at most once a second.
+        var tooFast = progressUpdates.Zip(progressUpdates.Skip(1))
+            .Count(pair => pair.Second.At - pair.First.At < TimeSpan.FromMilliseconds(900));
+        Assert.True(tooFast <= 2, $"{tooFast} status refreshes came less than a second apart");
     }
 
     [IntegrationFact]

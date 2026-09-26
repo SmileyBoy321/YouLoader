@@ -95,8 +95,10 @@ class PageParser(HTMLParser):
 
 
 def resolve(path: str) -> Path:
-    """Maps a site-relative URL path to the file Cloudflare Pages would serve."""
+    """Maps a URL path on the site to the file the host would serve."""
     clean = path.split("#")[0].split("?")[0]
+    if build.BASE_PATH and clean.startswith(build.BASE_PATH + "/"):
+        clean = clean[len(build.BASE_PATH):]
     target = PUBLIC / clean.lstrip("/")
     return target / "index.html" if clean.endswith("/") or target.is_dir() else target
 
@@ -199,9 +201,16 @@ def main() -> int:
     if f"Sitemap: {build.SITE_URL}/sitemap.xml" not in robots:
         errors.append("robots.txt doesn't point to the sitemap")
 
-    headers = (PUBLIC / "_headers").read_text(encoding="utf-8")
-    if "Content-Security-Policy" not in headers:
-        errors.append("_headers has no Content-Security-Policy")
+    for page_path, p in parsed.items():
+        if "Content-Security-Policy" not in (resolve(page_path) if page_path != "/404.html" else PUBLIC / "404.html").read_text(encoding="utf-8"):
+            errors.append(f"{page_path}: no Content-Security-Policy")
+
+    # Every root-relative link must carry the base path, or it breaks on GitHub Pages.
+    if build.BASE_PATH:
+        for file in [*PUBLIC.rglob("*.html"), PUBLIC / "styles.css"]:
+            text = file.read_text(encoding="utf-8")
+            if re.search(r'(?:href|src|srcset)="/(?!/)(?!' + re.escape(build.BASE_PATH.strip("/")) + r'/)', text) or 'url("/assets' in text:
+                errors.append(f"{file.relative_to(PUBLIC)}: link without the {build.BASE_PATH} prefix")
 
     size = sum(f.stat().st_size for f in PUBLIC.rglob("*") if f.is_file())
     home_weight = sum(resolve(a).stat().st_size for a in parsed["/"].assets if resolve(a).exists())
