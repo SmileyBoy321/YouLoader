@@ -6,11 +6,42 @@ public static class LinkParser
 
     /// <summary>Pulls every http(s) link out of pasted text, whatever separates them.</summary>
     public static IReadOnlyList<string> ExtractUrls(string text) =>
+        AllUrls(text).Distinct(StringComparer.Ordinal).ToList();
+
+    /// <summary>Every link in the text, repeats included.</summary>
+    static IEnumerable<string> AllUrls(string text) =>
         text.Split(Separators, StringSplitOptions.RemoveEmptyEntries)
             .Select(s => s.Trim('<', '>', '"', '\''))
-            .Where(IsHttpUrl)
-            .Distinct(StringComparer.Ordinal)
-            .ToList();
+            .Where(IsHttpUrl);
+
+    /// <summary>
+    /// Adds pasted links to what's already in the link box, one per line, skipping any that are
+    /// already there (however they're written) or repeated within the paste.
+    /// </summary>
+    public static (string Text, int Added, int Duplicates) MergeLinks(string existing, string pasted)
+    {
+        var seen = ExtractUrls(existing).Select(u => DownloadKey(u, wholePlaylist: false)).ToHashSet(StringComparer.Ordinal);
+        List<string> added = [];
+        var duplicates = 0;
+        foreach (var url in AllUrls(pasted))
+        {
+            if (seen.Add(DownloadKey(url, wholePlaylist: false))) added.Add(url);
+            else duplicates++;
+        }
+
+        if (added.Count == 0) return (existing, 0, duplicates);
+        var start = existing.TrimEnd();
+        var text = start.Length == 0 ? string.Join(Environment.NewLine, added) : start + Environment.NewLine + string.Join(Environment.NewLine, added);
+        return (text, added.Count, duplicates);
+    }
+
+    /// <summary>Counts the links in the box and how many of them repeat an earlier one.</summary>
+    public static (int Links, int Duplicates) CountLinks(string text)
+    {
+        var urls = AllUrls(text).ToList();
+        var unique = urls.Select(u => DownloadKey(u, wholePlaylist: false)).Distinct(StringComparer.Ordinal).Count();
+        return (urls.Count, urls.Count - unique);
+    }
 
     /// <summary>YouLoader only downloads from YouTube (including YouTube Music and youtu.be short links).</summary>
     public static bool IsYouTubeUrl(string url) =>

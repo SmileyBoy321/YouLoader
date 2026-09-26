@@ -42,7 +42,12 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = this;
-        Items.CollectionChanged += (_, _) => EmptyText.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        Items.CollectionChanged += (_, _) =>
+        {
+            EmptyText.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            UpdateQueueSummary();
+        };
+        DataObject.AddPastingHandler(UrlBox, OnPasting);
 
         ApplySettings();
         Loaded += async (_, _) => await PrepareToolsAsync();
@@ -115,10 +120,12 @@ public partial class MainWindow : Window
                 GroupName = "quality",
                 Style = (Style)FindResource("Chip"),
             };
+            chip.ToolTip = preset.Hint;
             chip.Checked += (_, _) =>
             {
                 selectedQuality = preset;
                 settings.Quality[selectedFormat.ToString()] = preset.Key;
+                QualityHint.Text = preset.Hint;
             };
             QualityPanel.Children.Add(chip);
             if (preset.Key == wanted) chip.IsChecked = true;
@@ -224,8 +231,49 @@ public partial class MainWindow : Window
 
     // ---- Links ----
 
-    void UrlBox_TextChanged(object sender, TextChangedEventArgs e) =>
-        UrlPlaceholder.Visibility = UrlBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+    void UrlBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var empty = UrlBox.Text.Length == 0;
+        UrlPlaceholder.Visibility = empty ? Visibility.Visible : Visibility.Collapsed;
+        ClearLinksButton.Visibility = empty ? Visibility.Collapsed : Visibility.Visible;
+
+        var (links, duplicates) = LinkParser.CountLinks(UrlBox.Text);
+        LinkCount.Text = links == 0 ? "" : (links == 1 ? "1 link" : $"{links} links")
+            + (duplicates == 0 ? "" : duplicates == 1 ? " · 1 duplicate will be skipped" : $" · {duplicates} duplicates will be skipped");
+    }
+
+    // Ctrl+V: links are added one per line, without repeating any that are already in the box.
+    // Pasting ordinary text works as usual.
+    void OnPasting(object sender, DataObjectPastingEventArgs e)
+    {
+        if (!e.SourceDataObject.GetDataPresent(DataFormats.UnicodeText)) return;
+        var text = (string)e.SourceDataObject.GetData(DataFormats.UnicodeText);
+        if (LinkParser.ExtractUrls(text).Count == 0) return;
+
+        e.CancelCommand();
+        if (UrlBox.SelectionLength > 0) UrlBox.SelectedText = "";
+        InsertLinks(text);
+    }
+
+    void InsertLinks(string pasted)
+    {
+        var (text, _, duplicates) = LinkParser.MergeLinks(UrlBox.Text, pasted);
+        UrlBox.Text = text;
+        UrlBox.CaretIndex = UrlBox.Text.Length;
+        UrlBox.ScrollToEnd();
+        autoPastedText = null;
+        if (duplicates > 0)
+            ShowNotice(duplicates == 1
+                ? "That link is already in the box, so it wasn't added again."
+                : $"{duplicates} of those links were already in the box, so they weren't added again.");
+    }
+
+    void ClearLinks_Click(object sender, RoutedEventArgs e)
+    {
+        UrlBox.Clear();
+        autoPastedText = null;
+        UrlBox.Focus();
+    }
 
     // Enter downloads; Shift+Enter adds a new line.
     void UrlBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -238,9 +286,8 @@ public partial class MainWindow : Window
     void Paste_Click(object sender, RoutedEventArgs e)
     {
         if (!Clipboard.ContainsText()) return;
-        AppendLinks(Clipboard.GetText());
+        InsertLinks(Clipboard.GetText());
         UrlBox.Focus();
-        UrlBox.CaretIndex = UrlBox.Text.Length;
     }
 
     // Saves a click: a freshly copied YouTube link is waiting in the box when you switch back.
@@ -259,12 +306,15 @@ public partial class MainWindow : Window
 
             if (UrlBox.Text.Length == 0 || UrlBox.Text == autoPastedText)
             {
-                UrlBox.Text = text;
+                UrlBox.Text = LinkParser.MergeLinks("", text).Text;
                 autoPastedText = UrlBox.Text;
             }
-            else if (!UrlBox.Text.Contains(text, StringComparison.Ordinal))
+            else
             {
-                AppendLinks(text);
+                // Quietly skip a link that's already in the box: the user didn't ask to paste it.
+                var (merged, added, _) = LinkParser.MergeLinks(UrlBox.Text, text);
+                if (added == 0) return;
+                UrlBox.Text = merged;
                 autoPastedText = null;
             }
             UrlBox.CaretIndex = UrlBox.Text.Length;
@@ -273,12 +323,6 @@ public partial class MainWindow : Window
         {
             // Another app is holding the clipboard; skip this time.
         }
-    }
-
-    void AppendLinks(string text)
-    {
-        var separator = UrlBox.Text.Length == 0 || UrlBox.Text.EndsWith('\n') ? "" : Environment.NewLine;
-        UrlBox.AppendText(separator + text.Trim());
     }
 
     // ---- Downloads ----
@@ -319,11 +363,16 @@ public partial class MainWindow : Window
                 continue;
             }
 
-            Items.Insert(0, item);
+            item.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(DownloadItem.State)) Reorder();
+            };
+            Items.Add(item);
             _ = RunAsync(item);
             added++;
         }
 
+        Reorder();
         UrlBox.Clear();
         autoPastedText = null;
         SaveSettings();
@@ -352,6 +401,37 @@ public partial class MainWindow : Window
 
     static string HostOf(string url) =>
         Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.Host.Replace("www.", "") : url;
+
+    // ---- Queue order ----
+
+    bool reordering;
+
+    // Keeps what's happening now at the top: downloading, then waiting (in the order they'll start), then finished.
+    void Reorder()
+    {
+        if (reordering) return;
+        reordering = true;
+        try
+        {
+            var sorted = QueueOrder.Sort(Items);
+            for (var i = 0; i < sorted.Count; i++)
+            {
+                var current = Items.IndexOf(sorted[i]);
+                if (current != i) Items.Move(current, i);
+            }
+        }
+        finally
+        {
+            reordering = false;
+        }
+        UpdateQueueSummary();
+    }
+
+    void UpdateQueueSummary()
+    {
+        var summary = QueueOrder.Summary(Items);
+        QueueSummary.Text = summary.Length == 0 ? "" : "· " + summary;
+    }
 
     // ---- Notices ----
 

@@ -18,7 +18,7 @@ public enum DownloadState
 public sealed class DownloadItem(string url, DownloadRequest request) : INotifyPropertyChanged
 {
     string title = url;
-    string status = "Waiting…";
+    string status = WaitingText;
     double progress;
     DownloadState state = DownloadState.Queued;
     string? filePath;
@@ -28,7 +28,15 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
     bool showExplanation;
     bool showTechnicalDetails;
 
+    const string WaitingText = "Waiting for a free slot…";
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>When the item joined the line. Waiting items start in this order.</summary>
+    public DateTime QueuedAt { get; private set; } = DateTime.UtcNow;
+
+    public DateTime? StartedAt { get; private set; }
+    public DateTime? FinishedAt { get; private set; }
 
     public string Url { get; } = url;
     public DownloadRequest Request { get; } = request;
@@ -124,6 +132,7 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
 
     public void ReportStarting()
     {
+        StartedAt ??= DateTime.UtcNow;
         State = DownloadState.Downloading;
         Progress = 0;
         Status = "Starting…";
@@ -159,6 +168,7 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
 
     public void Complete(string? warning = null)
     {
+        FinishedAt = DateTime.UtcNow;
         State = DownloadState.Done;
         Progress = 100;
         var saved = SavedFiles switch
@@ -172,6 +182,7 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
 
     public void Fail(ErrorExplanation explanation, string? technicalDetails = null)
     {
+        FinishedAt = DateTime.UtcNow;
         Error = explanation;
         TechnicalDetails = string.IsNullOrWhiteSpace(technicalDetails) ? null : technicalDetails;
         State = DownloadState.Failed;
@@ -180,6 +191,7 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
 
     public void MarkCanceled()
     {
+        FinishedAt = DateTime.UtcNow;
         State = DownloadState.Canceled;
         Status = "Canceled";
     }
@@ -197,7 +209,10 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
         SavedFiles = 0;
         FilePath = null;
         Progress = 0;
-        Status = "Waiting…";
+        QueuedAt = DateTime.UtcNow;
+        StartedAt = null;
+        FinishedAt = null;
+        Status = WaitingText;
         State = DownloadState.Queued;
     }
 
