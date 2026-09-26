@@ -4,10 +4,12 @@ on:
   push:
     branches: [master]
   pull_request:
-  schedule:
-    # Daily run of the real-download tests: catches YouTube changes before users report them.
-    - cron: "0 6 * * *"
   workflow_dispatch:
+    inputs:
+      real_downloads:
+        description: "Also run the real-download tests (YouTube often blocks GitHub's servers, so failures here may not be your fault)"
+        type: boolean
+        default: false
 
 jobs:
   app:
@@ -25,8 +27,11 @@ jobs:
       - name: Unit tests
         run: dotnet test --no-build --filter "Category!=Integration"
 
+      # Real downloads are best run on your own PC (YOULOADER_INTEGRATION=1 dotnet test):
+      # YouTube treats data-centre IPs like GitHub's as bots and often refuses them.
       - name: Real-download tests
-        if: github.event_name != 'pull_request'
+        if: inputs.real_downloads
+        continue-on-error: true
         env:
           YOULOADER_INTEGRATION: "1"
         run: dotnet test --no-build --filter "Category=Integration"
