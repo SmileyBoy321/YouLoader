@@ -1,0 +1,45 @@
+<main id="main" class="article">
+  <div class="wrap">
+    {{crumbs}}
+    <p class="kicker">Guide</p>
+    <h1>Opus vs MP3: <em>which should you use?</em></h1>
+    <p class="lead">Short answer: use Opus for music you download from YouTube, unless it has to play on an iPhone, an old MP3 player or a car stereo. Here's why, with real numbers.</p>
+
+    <h2>The difference in one table</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th></th><th>Opus</th><th>MP3</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Released</strong></td><td>2012 (IETF standard)</td><td>1993</td></tr>
+          <tr><td><strong>Sounds like the original at</strong></td><td>around 128 kbps</td><td>around 256–320 kbps</td></tr>
+          <tr><td><strong>4-minute song</strong></td><td>≈ 4 MB</td><td>≈ 7–10 MB</td></tr>
+          <tr><td><strong>Used by</strong></td><td>YouTube, Discord, WhatsApp, video calls</td><td>Music libraries and players since the '90s</td></tr>
+          <tr><td><strong>Plays on</strong></td><td>Android, browsers, VLC, Windows 11</td><td>Everything, including car stereos</td></tr>
+          <tr><td><strong>Licence</strong></td><td>Open, royalty-free</td><td>Patents expired in 2017</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Why Opus wins for YouTube downloads</h2>
+    <p>Opus is almost 20 years newer than MP3, and it's much more efficient: it reaches the same quality with roughly half the data. But for YouTube there's an even bigger reason. <strong>YouTube already streams its music as Opus.</strong></p>
+    <p>Saving as Opus means copying that stream byte for byte, so the result is identical to what you hear on YouTube. Saving as MP3 means decoding the Opus and compressing it again with an older codec. Lossy compression twice in a row is called generation loss. A high bitrate like 320 kbps keeps that loss inaudible for most people, but the file is more than twice as big and can never sound better than the Opus it came from.</p>
+
+    <h2>When MP3 is still the right choice</h2>
+    <ul>
+      <li><strong>Car stereos and USB sticks.</strong> Most head units read MP3 and nothing newer.</li>
+      <li><strong>iPhone and Apple Music libraries.</strong> Apple's apps don't import .opus files.</li>
+      <li><strong>Older MP3 players, DJ software and some editors.</strong> MP3 is the one format everything understands.</li>
+    </ul>
+    <p>If any of these apply, MP3 at 320 kbps is a great choice. You give up some storage space, not audible quality.</p>
+
+    <h2>Why downloaded songs can sound louder than on YouTube</h2>
+    <p>YouTube turns loud songs down during playback so everything plays at a similar volume. This is called loudness normalisation. A downloaded file keeps the song's original level, so it can sound louder in your player than it did on YouTube. The quality is the same; only the volume setting differs. Opus and MP3 behave the same way here.</p>
+
+    <h2>Try it yourself</h2>
+    <p>Download the same song both ways and compare. With YouLoader, that means one click on <em>Opus</em>, one on <em>MP3</em>, and the same link pasted twice.</p>
+    <div class="callout">
+      <p><strong>YouLoader saves Opus, MP3 and MP4.</strong> Free, open source, no ads.</p>
+      <div class="cta-row">{{download_button}}</div>
+    </div>
+  </div>
+</main>

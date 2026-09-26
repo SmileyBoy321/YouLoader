@@ -1,0 +1,408 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Interop;
+using Microsoft.Win32;
+using YouLoader.Core.Models;
+using YouLoader.Core.Services;
+
+namespace YouLoader;
+
+public partial class MainWindow : Window
+{
+    const int MaxParallelDownloads = 2;
+    const string DonateUrl = "https://ko-fi.com/smileyboyy";
+    const string SourceUrl = "https://github.com/SmileyBoy321/YouLoader";
+
+    static readonly Dictionary<OutputFormat, string> FormatHints = new()
+    {
+        [OutputFormat.Opus] = "The exact audio YouTube streams, copied without re-encoding. Smallest files at the best quality.",
+        [OutputFormat.Mp3] = "Converted from YouTube's audio. Bigger files, but plays on every device and car stereo.",
+        [OutputFormat.Mp4] = "Video with sound. 1080p and below use H.264, which plays everywhere.",
+    };
+
+    readonly AppSettings settings = AppSettings.Load();
+    readonly ToolManager tools = new();
+    readonly SemaphoreSlim slots = new(MaxParallelDownloads);
+    DownloadService? downloader;
+    OutputFormat selectedFormat;
+    QualityPreset? selectedQuality;
+    AppUpdate? availableUpdate;
+    string? lastAutoPasted;
+
+    public ObservableCollection<DownloadItem> Items { get; } = [];
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        DataContext = this;
+        Items.CollectionChanged += (_, _) => EmptyText.Visibility = Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        ApplySettings();
+        Loaded += async (_, _) => await PrepareToolsAsync();
+        Activated += (_, _) => AutoPasteFromClipboard();
+        Closing += OnClosing;
+        SourceInitialized += (_, _) => UseDarkTitleBar();
+    }
+
+    // Matches the Windows title bar to the dark window (Windows 10 20H1 and later).
+    void UseDarkTitleBar()
+    {
+        const int DwmwaUseImmersiveDarkMode = 20;
+        var enabled = 1;
+        DwmSetWindowAttribute(new WindowInteropHelper(this).Handle, DwmwaUseImmersiveDarkMode, ref enabled, sizeof(int));
+    }
+
+    [DllImport("dwmapi.dll")]
+    static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+    // ---- Settings ----
+
+    void ApplySettings()
+    {
+        var formatChip = FormatPanel.Children.OfType<RadioButton>()
+            .FirstOrDefault(r => (string)r.Tag == settings.Format.ToString())
+            ?? FormatPanel.Children.OfType<RadioButton>().First();
+        formatChip.IsChecked = true;
+
+        PlaylistBox.IsChecked = settings.WholePlaylist;
+        EmbedArtBox.IsChecked = settings.EmbedArt;
+        OutputText.Text = settings.OutputDir;
+        OutputText.ToolTip = settings.OutputDir;
+    }
+
+    void SaveSettings()
+    {
+        settings.Format = selectedFormat;
+        if (selectedQuality is not null) settings.Quality[selectedFormat.ToString()] = selectedQuality.Key;
+        settings.WholePlaylist = PlaylistBox.IsChecked == true;
+        settings.EmbedArt = EmbedArtBox.IsChecked == true;
+        settings.Save();
+    }
+
+    void Format_Checked(object sender, RoutedEventArgs e)
+    {
+        selectedFormat = Enum.Parse<OutputFormat>((string)((RadioButton)sender).Tag);
+        FormatHint.Text = FormatHints[selectedFormat];
+        BuildQualityChips();
+    }
+
+    void BuildQualityChips()
+    {
+        QualityPanel.Children.Clear();
+        selectedQuality = null;
+        var wanted = settings.QualityFor(selectedFormat);
+
+        foreach (var preset in QualityPresets.For(selectedFormat))
+        {
+            var chip = new RadioButton
+            {
+                Content = preset.Label,
+                GroupName = "quality",
+                Style = (Style)FindResource("Chip"),
+            };
+            chip.Checked += (_, _) =>
+            {
+                selectedQuality = preset;
+                settings.Quality[selectedFormat.ToString()] = preset.Key;
+            };
+            QualityPanel.Children.Add(chip);
+            if (preset.Key == wanted) chip.IsChecked = true;
+        }
+    }
+
+    // ---- Tools ----
+
+    async Task PrepareToolsAsync()
+    {
+        DownloadButton.IsEnabled = false;
+        UpdateToolsButton.IsEnabled = false;
+        var status = new Progress<string>(text => ToolStatus.Text = text);
+        try
+        {
+            await tools.EnsureAsync(status);
+            downloader = new DownloadService(tools);
+            DownloadButton.IsEnabled = true;
+            await ShowToolVersionAsync();
+
+            if (DateTime.UtcNow - settings.LastToolUpdateUtc > TimeSpan.FromDays(1))
+                await UpdateToolsAsync(quiet: true);
+
+            await CheckForAppUpdateAsync();
+        }
+        catch (Exception e) when (e is HttpRequestException or IOException or InvalidDataException or TaskCanceledException or UnauthorizedAccessException)
+        {
+            ToolStatus.Text = $"Setup failed: {e.Message}";
+            UpdateToolsButton.Content = "Retry setup";
+        }
+        finally
+        {
+            UpdateToolsButton.IsEnabled = true;
+        }
+    }
+
+    async Task ShowToolVersionAsync()
+    {
+        var version = await tools.GetYtDlpVersionAsync();
+        ToolStatus.Text = $"Ready · yt-dlp {version} · ffmpeg ✓ · {tools.JsRuntimeName}";
+    }
+
+    async Task UpdateToolsAsync(bool quiet)
+    {
+        // Replacing yt-dlp.exe while downloads use it would break them.
+        if (Items.Any(i => i.IsActive))
+        {
+            if (!quiet) ToolStatus.Text = "Finish or cancel running downloads before updating yt-dlp.";
+            return;
+        }
+
+        UpdateToolsButton.IsEnabled = false;
+        DownloadButton.IsEnabled = false;
+        ToolStatus.Text = "Checking for a newer yt-dlp…";
+        try
+        {
+            var result = await tools.UpdateYtDlpAsync();
+            settings.LastToolUpdateUtc = DateTime.UtcNow;
+            settings.Save();
+            await ShowToolVersionAsync();
+            if (!quiet && result.Length > 0) ToolStatus.Text += $" · {result}";
+        }
+        catch (Exception e) when (e is Win32Exception or InvalidOperationException or IOException)
+        {
+            ToolStatus.Text = $"Couldn't update yt-dlp: {e.Message}";
+        }
+        finally
+        {
+            UpdateToolsButton.IsEnabled = true;
+            DownloadButton.IsEnabled = downloader is not null;
+        }
+    }
+
+    async Task CheckForAppUpdateAsync()
+    {
+        var current = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0);
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("YouLoader");
+        availableUpdate = await UpdateChecker.CheckAsync(current, http);
+        if (availableUpdate is null) return;
+
+        UpdateText.Text = $"YouLoader {availableUpdate.Version} is out. You have {current.ToString(3)}.";
+        UpdateBanner.Visibility = Visibility.Visible;
+    }
+
+    async void UpdateTools_Click(object sender, RoutedEventArgs e)
+    {
+        if (downloader is null)
+        {
+            UpdateToolsButton.Content = "Update yt-dlp";
+            await PrepareToolsAsync();
+        }
+        else
+        {
+            await UpdateToolsAsync(quiet: false);
+        }
+    }
+
+    void GetUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        if (availableUpdate is not null) OpenUrl(availableUpdate.Url);
+    }
+
+    // ---- Links ----
+
+    void UrlBox_TextChanged(object sender, TextChangedEventArgs e) =>
+        UrlPlaceholder.Visibility = UrlBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+    // Enter downloads; Shift+Enter adds a new line.
+    void UrlBox_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) return;
+        e.Handled = true;
+        StartDownloads();
+    }
+
+    void Paste_Click(object sender, RoutedEventArgs e)
+    {
+        if (!Clipboard.ContainsText()) return;
+        AppendLinks(Clipboard.GetText());
+        UrlBox.Focus();
+        UrlBox.CaretIndex = UrlBox.Text.Length;
+    }
+
+    // Saves a click: a freshly copied YouTube or SoundCloud link is waiting in the box when you switch back.
+    void AutoPasteFromClipboard()
+    {
+        if (UrlBox.Text.Length > 0) return;
+        try
+        {
+            if (!Clipboard.ContainsText()) return;
+            var text = Clipboard.GetText().Trim();
+            if (text == lastAutoPasted || text.Length > 2000) return;
+            var urls = LinkParser.ExtractUrls(text);
+            if (urls.Count == 0 || !urls.All(IsSupportedSite)) return;
+            lastAutoPasted = text;
+            AppendLinks(text);
+        }
+        catch (System.Runtime.InteropServices.COMException)
+        {
+            // Another app is holding the clipboard; skip this time.
+        }
+    }
+
+    static bool IsSupportedSite(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri)
+        && (uri.Host.Contains("youtube.com") || uri.Host == "youtu.be" || uri.Host.EndsWith("soundcloud.com"));
+
+    void AppendLinks(string text)
+    {
+        var separator = UrlBox.Text.Length == 0 || UrlBox.Text.EndsWith('\n') ? "" : Environment.NewLine;
+        UrlBox.AppendText(separator + text.Trim());
+    }
+
+    // ---- Downloads ----
+
+    void Download_Click(object sender, RoutedEventArgs e) => StartDownloads();
+
+    void StartDownloads()
+    {
+        if (downloader is null || selectedQuality is null) return;
+
+        var urls = LinkParser.ExtractUrls(UrlBox.Text);
+        if (urls.Count == 0)
+        {
+            MessageBox.Show(this, "Paste at least one link that starts with https://", "YouLoader",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var request = new DownloadRequest(
+            selectedFormat,
+            selectedQuality.Key,
+            PlaylistBox.IsChecked == true,
+            EmbedArtBox.IsChecked == true,
+            settings.OutputDir);
+
+        foreach (var url in urls)
+        {
+            var item = new DownloadItem(url, request);
+            Items.Insert(0, item);
+            _ = RunAsync(item);
+        }
+
+        QueueScroll.ScrollToTop();
+        UrlBox.Clear();
+        SaveSettings();
+    }
+
+    async Task RunAsync(DownloadItem item)
+    {
+        try
+        {
+            await slots.WaitAsync(item.Cancellation.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            item.MarkCanceled();
+            return;
+        }
+
+        try
+        {
+            await downloader!.RunAsync(item);
+        }
+        finally
+        {
+            slots.Release();
+        }
+    }
+
+    static DownloadItem ItemOf(object sender) => (DownloadItem)((FrameworkElement)sender).DataContext;
+
+    void Cancel_Click(object sender, RoutedEventArgs e) => ItemOf(sender).Cancel();
+
+    void Retry_Click(object sender, RoutedEventArgs e)
+    {
+        var item = ItemOf(sender);
+        item.Reset();
+        _ = RunAsync(item);
+    }
+
+    void Play_Click(object sender, RoutedEventArgs e)
+    {
+        if (ItemOf(sender).FilePath is { } path && File.Exists(path))
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+    }
+
+    void Show_Click(object sender, RoutedEventArgs e)
+    {
+        if (ItemOf(sender).FilePath is { } path && File.Exists(path))
+            Process.Start("explorer.exe", $"/select,\"{path}\"");
+        else
+            OpenFolder();
+    }
+
+    void ClearFinished_Click(object sender, RoutedEventArgs e)
+    {
+        foreach (var item in Items.Where(i => !i.IsActive).ToList()) Items.Remove(item);
+    }
+
+    // ---- Folder ----
+
+    void ChangeFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "Choose where to save downloads",
+            InitialDirectory = Directory.Exists(settings.OutputDir) ? settings.OutputDir : null,
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        settings.OutputDir = dialog.FolderName;
+        OutputText.Text = settings.OutputDir;
+        OutputText.ToolTip = settings.OutputDir;
+        SaveSettings();
+    }
+
+    void OpenFolder_Click(object sender, RoutedEventArgs e) => OpenFolder();
+
+    void OpenFolder()
+    {
+        Directory.CreateDirectory(settings.OutputDir);
+        Process.Start("explorer.exe", $"\"{settings.OutputDir}\"");
+    }
+
+    // ---- Links out ----
+
+    void Donate_Click(object sender, RoutedEventArgs e) => OpenUrl(DonateUrl);
+
+    void Source_Click(object sender, RoutedEventArgs e) => OpenUrl(SourceUrl);
+
+    static void OpenUrl(string url) => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+
+    // ---- Closing ----
+
+    void OnClosing(object? sender, CancelEventArgs e)
+    {
+        var running = Items.Count(i => i.IsActive);
+        if (running > 0)
+        {
+            var answer = MessageBox.Show(this,
+                $"{running} download(s) are still running. Quit and cancel them?",
+                "YouLoader", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (answer != MessageBoxResult.Yes)
+            {
+                e.Cancel = true;
+                return;
+            }
+            foreach (var item in Items.Where(i => i.IsActive)) item.Cancel();
+        }
+        SaveSettings();
+    }
+}

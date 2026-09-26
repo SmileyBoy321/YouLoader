@@ -1,0 +1,47 @@
+name: Release
+
+# Push a tag like v2.0.0 to build YouLoader.exe from that exact commit and publish it on the Releases page.
+# The website's download button always points at the newest release's YouLoader.exe.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Unit tests
+        run: dotnet test --filter "Category!=Integration"
+
+      - name: Publish YouLoader.exe
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          dotnet publish src/YouLoader -c Release -o dist -p:Version=$version
+          $hash = (Get-FileHash dist/YouLoader.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  YouLoader.exe" | Out-File dist/YouLoader.exe.sha256 -Encoding ascii
+          "SHA256=$hash" >> $env:GITHUB_ENV
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/YouLoader.exe
+            dist/YouLoader.exe.sha256
+          generate_release_notes: true
+          body: |
+            **Download `YouLoader.exe` below.** It's one portable file: no installer, nothing else to install.
+
+            SHA-256: `${{ env.SHA256 }}`
+
+            Windows may show “Windows protected your PC” because the app isn't code-signed yet. Click **More info**, then **Run anyway**.

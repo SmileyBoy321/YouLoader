@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    # Daily run of the real-download tests: catches YouTube changes before users report them.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  app:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build --configuration Debug
+
+      - name: Unit tests
+        run: dotnet test --no-build --filter "Category!=Integration"
+
+      - name: Real-download tests
+        if: github.event_name != 'pull_request'
+        env:
+          YOULOADER_INTEGRATION: "1"
+        run: dotnet test --no-build --filter "Category=Integration"
+
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, so the sitemap gets real last-modified dates
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build and check the site
+        env:
+          SITE_URL: ${{ vars.SITE_URL || 'https://youloader.example' }}
+        run: |
+          python website/build.py
+          python website/test_site.py

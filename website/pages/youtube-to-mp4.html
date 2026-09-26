@@ -1,0 +1,46 @@
+<main id="main" class="article">
+  <div class="wrap">
+    {{crumbs}}
+    <p class="kicker">YouTube to MP4</p>
+    <h1>YouTube to MP4 in <em>1080p, 4K and beyond.</em></h1>
+    <p class="lead">Save YouTube videos as MP4 in any resolution the video offers, from 480p up to 4K and 8K. No watermark, no time limit, no ads, and no waiting in a server queue.</p>
+    <div class="cta-row">{{download_button}}</div>
+
+    <h2>How to download a YouTube video as MP4</h2>
+    <ol>
+      <li><strong>Download YouLoader</strong> and open it. It's one portable file, nothing to install.</li>
+      <li><strong>Copy the video link</strong> and paste it into YouLoader. Add as many links as you like, one per line.</li>
+      <li><strong>Pick MP4</strong>, then a quality: <em>Best available</em>, 1080p, 720p or 480p.</li>
+      <li><strong>Press Enter.</strong> You'll see the video and audio download, then merge into one MP4 in <code>Downloads\YouLoader</code>.</li>
+    </ol>
+
+    <h2>Which quality should I pick?</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Setting</th><th>What you get</th><th>Plays on</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Best available</strong></td><td>The highest resolution and frame rate the video has, up to 4K or 8K at 60 fps. Usually AV1 or VP9 video.</td><td>Windows 11, VLC, modern phones and TVs</td></tr>
+          <tr><td><strong>1080p</strong></td><td>Full HD in H.264 with AAC audio. The safest choice.</td><td>Everything: old PCs, TVs, editors, WhatsApp</td></tr>
+          <tr><td><strong>720p</strong></td><td>HD in H.264. About half the size of 1080p.</td><td>Everything</td></tr>
+          <tr><td><strong>480p</strong></td><td>Small files for phones and slow connections.</td><td>Everything</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Why many converters stop at 720p</h2>
+    <p>For anything above 720p, YouTube sends video and audio as two separate streams. Online converters often skip the work of joining them and give you a low-resolution file that already has both. YouLoader downloads both streams and merges them with ffmpeg <strong>without re-encoding</strong>. It's fast, and the picture is exactly what YouTube serves.</p>
+
+    <h2>Playing 4K AV1 files on Windows</h2>
+    <p>YouTube's 4K and 8K streams mostly use the AV1 codec. Windows 11 plays AV1 out of the box. On Windows 10, install the free <strong>AV1 Video Extension</strong> from the Microsoft Store, or use <a href="https://www.videolan.org/">VLC</a>. If a file needs to play on anything, including older TVs and editing software, choose 1080p.</p>
+
+    <div class="callout">
+      <p><strong>No watermark, no limits, no ads.</strong> Free and open source for Windows 10 and 11.</p>
+      <div class="cta-row">{{download_button}}</div>
+    </div>
+
+    <h2>Questions</h2>
+    <div class="faq">
+{{faq}}
+    </div>
+  </div>
+</main>

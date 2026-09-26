@@ -1,0 +1,27 @@
+<main id="main" class="article">
+  <div class="wrap">
+    {{crumbs}}
+    <p class="kicker">Privacy</p>
+    <h1>No ads. No analytics. <em>No tracking.</em></h1>
+    <p class="lead">This isn't a privacy policy written to hide things. It's a plain list of everything that connects to anything, on this website and in the app.</p>
+
+    <h2>This website</h2>
+    <ul>
+      <li><strong>No cookies</strong>, no analytics scripts, no ad networks, no tracking pixels.</li>
+      <li><strong>No third-party requests.</strong> Fonts, images and styles are all served from this domain.</li>
+      <li>The site is hosted on Cloudflare Pages. Like any web host, Cloudflare may keep short-lived technical logs, such as IP addresses, to protect against attacks. We don't read or use them.</li>
+      <li>The download button links to the release file on GitHub, and the donate links go to Ko-fi. Those sites have their own privacy policies.</li>
+    </ul>
+
+    <h2>The YouLoader app</h2>
+    <ul>
+      <li><strong>No account, no telemetry, no crash reporting.</strong> YouLoader never sends anything about you or what you download to us.</li>
+      <li>When you download something, yt-dlp connects to that site (for example YouTube or SoundCloud) to fetch it.</li>
+      <li>It connects to GitHub to download its helper tools (yt-dlp, ffmpeg and Deno) the first time, to update yt-dlp once a day, and to check whether a newer version of YouLoader exists. These are plain downloads of public files.</li>
+      <li>Settings are saved on your PC in <code>%AppData%\YouLoader\settings.json</code>, and the helper tools in <code>%LocalAppData%\YouLoader\tools</code>. Delete those folders to remove every trace.</li>
+    </ul>
+
+    <h2>Questions</h2>
+    <p>Open an issue on <a href="{{github}}/issues">GitHub</a>. Since the code is public, you can also check every one of these claims yourself.</p>
+  </div>
+</main>
