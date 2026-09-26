@@ -6,3 +6,4 @@ TestResults/
 website/public/
 __pycache__/
 website/.private-words
+dist/

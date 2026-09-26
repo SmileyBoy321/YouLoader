@@ -34,7 +34,8 @@ public partial class MainWindow : Window
     OutputFormat selectedFormat;
     QualityPreset? selectedQuality;
     AppUpdate? availableUpdate;
-    string? lastAutoPasted;
+    string? lastClipboardLink; // last link picked up from the clipboard, so it isn't pasted twice
+    string? autoPastedText;    // what the box held right after auto-paste; if it still does, the user hasn't touched it
 
     public ObservableCollection<DownloadItem> Items { get; } = [];
 
@@ -236,18 +237,30 @@ public partial class MainWindow : Window
     }
 
     // Saves a click: a freshly copied YouTube or SoundCloud link is waiting in the box when you switch back.
+    // A newly copied link replaces one YouLoader pasted itself, but never overwrites what the user typed:
+    // then it's added on a new line instead, so copying links one after another builds a list.
     void AutoPasteFromClipboard()
     {
-        if (UrlBox.Text.Length > 0) return;
         try
         {
             if (!Clipboard.ContainsText()) return;
             var text = Clipboard.GetText().Trim();
-            if (text == lastAutoPasted || text.Length > 2000) return;
+            if (text == lastClipboardLink || text.Length > 2000) return;
             var urls = LinkParser.ExtractUrls(text);
             if (urls.Count == 0 || !urls.All(IsSupportedSite)) return;
-            lastAutoPasted = text;
-            AppendLinks(text);
+            lastClipboardLink = text;
+
+            if (UrlBox.Text.Length == 0 || UrlBox.Text == autoPastedText)
+            {
+                UrlBox.Text = text;
+                autoPastedText = UrlBox.Text;
+            }
+            else if (!UrlBox.Text.Contains(text, StringComparison.Ordinal))
+            {
+                AppendLinks(text);
+                autoPastedText = null;
+            }
+            UrlBox.CaretIndex = UrlBox.Text.Length;
         }
         catch (System.Runtime.InteropServices.COMException)
         {
@@ -308,6 +321,7 @@ public partial class MainWindow : Window
         }
 
         UrlBox.Clear();
+        autoPastedText = null;
         SaveSettings();
 
         if (alreadyListed.Count == 0)

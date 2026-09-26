@@ -42,6 +42,8 @@ public class LinkParserTests
     [InlineData("https://www.youtube.com/watch?v=abc&list=PL123", false, false)]
     [InlineData("https://www.youtube.com/watch?v=abc&list=PL123", true, true)]
     [InlineData("https://youtu.be/abc?list=PL123", true, true)]
+    [InlineData("https://www.youtube.com/watch?v=CmpSVfoJo-4&list=RDCmpSVfoJo-4&start_radio=1", true, false)]
+    [InlineData("https://www.youtube.com/watch?v=CmpSVfoJo-4&list=RDCmpSVfoJo-4&start_radio=1", false, false)]
     [InlineData("https://music.youtube.com/playlist?list=OLAK5", false, true)]
     [InlineData("https://m.youtube.com/watch?v=abc", true, false)]
     [InlineData("https://www.youtube.com/shorts/abc", true, false)]

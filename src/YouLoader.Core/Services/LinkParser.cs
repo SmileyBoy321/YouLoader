@@ -32,10 +32,13 @@ public static class LinkParser
 
         if (IsYouTube(host))
         {
-            var hasList = QueryValue(uri, "list") is not null;
+            var list = QueryValue(uri, "list");
+            var hasList = list is not null;
             if (segments is ["playlist"]) return hasList;
             if (segments.Length > 0 && (segments[0].StartsWith('@') || segments[0] is "channel" or "c" or "user")) return true;
-            return hasList && wholePlaylist;
+            // A Mix (list=RD...) is YouTube's endless auto-generated radio. Nobody means "download all of it"
+            // when they tick the playlist box, so a video opened from a Mix is always just that video.
+            return hasList && wholePlaylist && !IsMix(list!);
         }
 
         if (host == "soundcloud.com" || host.EndsWith(".soundcloud.com", StringComparison.Ordinal))
@@ -75,6 +78,8 @@ public static class LinkParser
             : host;
         return cleanHost + path + uri.Query;
     }
+
+    static bool IsMix(string list) => list.StartsWith("RD", StringComparison.Ordinal);
 
     static string? QueryValue(Uri uri, string key) =>
         uri.Query.TrimStart('?')
