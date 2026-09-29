@@ -372,9 +372,10 @@ class MainActivity : AppCompatActivity(), ItemAdapter.Actions {
             .setTitle("YouLoader ${BuildConfig.VERSION_NAME}")
             .setMessage(
                 "Downloads. Nothing else.\n\n" +
-                    "Free forever, with no ads, no sign-up and no tracking. The code is public under the MIT license.\n\n" +
-                    "Downloading is done by yt-dlp ${Engine.version.value ?: "(built in)"}, ffmpeg and QuickJS, " +
-                    "bundled by youtubedl-android.",
+                    "Free forever, with no ads, no sign-up and no tracking.\n\n" +
+                    "Downloading is done by yt-dlp ${Engine.version.value ?: "(built in)"}, Python, FFmpeg and QuickJS, " +
+                    "bundled by youtubedl-android (GPL-3.0). Because of that, this app as a whole is distributed under " +
+                    "the GPL-3.0; YouLoader's own code is MIT-licensed. All of it is public on GitHub.",
             )
             .setPositiveButton("OK", null)
             .setNeutralButton(R.string.menu_source) { _, _ -> openUrl(AppUpdates.SOURCE_URL) }

@@ -12,6 +12,10 @@ val keystoreProps = Properties().apply {
     if (keystorePropsFile.exists()) keystorePropsFile.inputStream().use { load(it) }
 }
 
+// Releases pass the tag's version (./gradlew -PappVersion=2.2.0 ...), so the APK and YouLoader.exe always match.
+val appVersion = (findProperty("appVersion") as String?)?.removePrefix("v") ?: "2.2.0"
+val appVersionCode = appVersion.split('.').map { it.toInt() }.let { (major, minor, patch) -> major * 10000 + minor * 100 + patch }
+
 // The download engine ships native binaries (Python, ffmpeg, QuickJS) for every CPU type.
 // One APK per CPU type keeps each download small; the universal APK works on any phone.
 val supportedAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
@@ -25,8 +29,8 @@ android {
         minSdk = 24
         targetSdk = 36
         // Android releases share version numbers with the Windows app; 2.2.0 is the first with an APK.
-        versionCode = 20200
-        versionName = "2.2.0"
+        versionCode = appVersionCode
+        versionName = appVersion
         ndk { abiFilters += supportedAbis }
     }
 
