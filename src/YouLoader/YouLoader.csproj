@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\youloader.ico</ApplicationIcon>
-    <Version>2.1.0</Version>
+    <Version>2.2.0</Version>
     <Product>YouLoader</Product>
     <Description>Free, ad-free YouTube downloader for MP3 and MP4.</Description>
     <Copyright>Copyright (c) SmileyBoy</Copyright>
