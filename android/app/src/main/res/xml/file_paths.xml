@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lets other apps open finished downloads on Android 9 and older, where they're plain files. -->
+<paths>
+    <external-path name="downloads" path="Download/YouLoader/" />
+</paths>

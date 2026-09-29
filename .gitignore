@@ -7,3 +7,12 @@ website/public/
 __pycache__/
 website/.private-words
 dist/
+
+# Android
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/local.properties
+android/keystore.properties
+*.keystore
+*.jks

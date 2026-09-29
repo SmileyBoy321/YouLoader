@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">YouLoader</string>
+    <string name="tagline">Free forever · No ads · No tracking</string>
+    <string name="link_hint">Paste YouTube links here. One per line, or a whole playlist.</string>
+    <string name="paste">Paste</string>
+    <string name="format">Format</string>
+    <string name="mp3_button">MP3 · audio</string>
+    <string name="mp4_button">MP4 · video</string>
+    <string name="quality">Quality</string>
+    <string name="whole_playlist">Whole playlist when a video link has one</string>
+    <string name="embed_art">Embed cover art &amp; tags</string>
+    <string name="download">Download</string>
+    <string name="downloads">Downloads</string>
+    <string name="clear_finished">Clear finished</string>
+    <string name="empty_list">Downloads you start appear here. Tip: in the YouTube app, tap Share → YouLoader.</string>
+    <string name="cancel">Cancel</string>
+    <string name="retry">Retry</string>
+    <string name="why">Why?</string>
+    <string name="play">Play</string>
+    <string name="share">Share</string>
+    <string name="remove">Remove</string>
+    <string name="what_happened">What happened</string>
+    <string name="what_you_can_try">What you can try</string>
+    <string name="technical_details">Technical details</string>
+    <string name="copy_details">Copy details</string>
+    <string name="report_problem">Report a problem</string>
+    <string name="get_it">Get it</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="menu_update_engine">Update download engine</string>
+    <string name="menu_privacy">Privacy</string>
+    <string name="menu_source">Source code</string>
+    <string name="menu_about">About</string>
+</resources>
