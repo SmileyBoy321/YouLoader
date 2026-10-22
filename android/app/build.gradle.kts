@@ -13,7 +13,7 @@ val keystoreProps = Properties().apply {
 }
 
 // Releases pass the tag's version (./gradlew -PappVersion=2.2.0 ...), so the APK and YouLoader.exe always match.
-val appVersion = (findProperty("appVersion") as String?)?.removePrefix("v") ?: "2.2.0"
+val appVersion = (findProperty("appVersion") as String?)?.removePrefix("v") ?: "2.3.0"
 val appVersionCode = appVersion.split('.').map { it.toInt() }.let { (major, minor, patch) -> major * 10000 + minor * 100 + patch }
 
 // The download engine ships native binaries (Python, ffmpeg, QuickJS) for every CPU type.
