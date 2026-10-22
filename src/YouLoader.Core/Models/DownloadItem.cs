@@ -87,6 +87,12 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
         set => Set(ref showTechnicalDetails, value);
     }
 
+    /// <summary>For a Shazam link: the song it names, once looked up. Kept across retries.</summary>
+    public ShazamSong? Song { get; private set; }
+
+    /// <summary>What yt-dlp is asked to download: the link itself, or a YouTube search for a Shazam song.</summary>
+    public string YtDlpTarget => Song?.SearchQuery ?? Url;
+
     public CancellationTokenSource Cancellation { get; private set; } = new();
     public int SavedFiles { get; private set; }
 
@@ -136,6 +142,14 @@ public sealed class DownloadItem(string url, DownloadRequest request) : INotifyP
         State = DownloadState.Downloading;
         Progress = 0;
         Status = "Starting…";
+    }
+
+    public void ReportLookingUpSong() => Status = "Looking up the song on Shazam…";
+
+    public void ReportSong(ShazamSong song)
+    {
+        Song = song;
+        Title = song.DisplayName;
     }
 
     /// <param name="text">New status text, or null to keep the current one.</param>

@@ -92,4 +92,6 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
     testImplementation("junit:junit:4.13.2")
+    // Android's own org.json only exists on a device; unit tests run on the PC.
+    testImplementation("org.json:json:20240303")
 }

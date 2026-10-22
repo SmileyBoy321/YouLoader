@@ -149,7 +149,11 @@ object ErrorMessages {
 
     /** Every explanation the app can show, keyed by a stable id. */
     val catalogue: List<Pair<String, ErrorExplanation>>
-        get() = known.map { it.id to it.explanation } + ("engine-did-not-start" to engineDidNotStart(null))
+        get() = known.map { it.id to it.explanation } + listOf(
+            "shazam-unknown-song" to Shazam.unknownSong,
+            "shazam-unreachable" to Shazam.lookupFailed,
+            "engine-did-not-start" to engineDidNotStart(null),
+        )
 
     /** For when the download engine itself couldn't be started. */
     fun engineDidNotStart(reason: String?) = ErrorExplanation(

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">YouLoader</string>
     <string name="tagline">Free forever · No ads · No tracking</string>
-    <string name="link_hint">Paste YouTube links here. One per line, or a whole playlist.</string>
+    <string name="link_hint">Paste YouTube or Shazam links here. One per line, or a whole playlist.</string>
     <string name="paste">Paste</string>
     <string name="format">Format</string>
     <string name="mp3_button">MP3 · audio</string>

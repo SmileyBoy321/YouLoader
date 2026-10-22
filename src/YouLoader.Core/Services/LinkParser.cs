@@ -43,9 +43,34 @@ public static class LinkParser
         return (urls.Count, urls.Count - unique);
     }
 
-    /// <summary>YouLoader only downloads from YouTube (including YouTube Music and youtu.be short links).</summary>
+    /// <summary>
+    /// YouLoader downloads from YouTube (including YouTube Music and youtu.be short links), and finds
+    /// songs shared from Shazam on YouTube.
+    /// </summary>
+    public static bool IsSupportedUrl(string url) => IsYouTubeUrl(url) || ShazamTrackId(url) is not null;
+
     public static bool IsYouTubeUrl(string url) =>
         Uri.TryCreate(url, UriKind.Absolute, out var uri) && IsYouTube(uri.Host.ToLowerInvariant());
+
+    /// <summary>
+    /// The song number in a Shazam link, or null for any other link. Shazam shares
+    /// shazam.com/track/843646036/without-me, sometimes with a language in front (shazam.com/en-us/track/…),
+    /// and shz.am/t843646036 for short.
+    /// </summary>
+    public static string? ShazamTrackId(string url)
+    {
+        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri)) return null;
+
+        var host = uri.Host.ToLowerInvariant();
+        var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var id = host switch
+        {
+            "shazam.com" or "www.shazam.com" => segments.SkipWhile(s => s != "track").Skip(1).FirstOrDefault(),
+            "shz.am" or "www.shz.am" => segments is [var code] && code.StartsWith('t') ? code[1..] : null,
+            _ => null,
+        };
+        return id is { Length: > 0 } && id.All(char.IsAsciiDigit) ? id : null;
+    }
 
     public static bool IsHttpUrl(string text) =>
         Uri.TryCreate(text, UriKind.Absolute, out var uri)
@@ -85,6 +110,8 @@ public static class LinkParser
     public static string DownloadKey(string url, bool wholePlaylist)
     {
         if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri)) return url.Trim();
+
+        if (ShazamTrackId(url) is { } trackId) return "shazam:" + trackId;
 
         var host = uri.Host.ToLowerInvariant();
         if (IsYouTube(host))

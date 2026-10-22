@@ -35,11 +35,26 @@ class DownloadItem(val id: Long, val url: String, val request: DownloadRequest, 
 
     @Volatile var cancelRequested = false; private set
 
+    /** For a Shazam link: the song it names, once looked up. Kept across retries. */
+    @Volatile var song: ShazamSong? = null; private set
+
+    /** What yt-dlp is asked to download: the link itself, or a YouTube search for a Shazam song. */
+    val ytDlpTarget get() = song?.searchQuery ?: url
+
     fun reportStarting() {
         if (startedAt == null) startedAt = clock()
         state = DownloadState.DOWNLOADING
         progress = 0.0
         status = "Starting…"
+    }
+
+    fun reportLookingUpSong() {
+        status = "Looking up the song on Shazam…"
+    }
+
+    fun reportSong(song: ShazamSong) {
+        this.song = song
+        title = song.displayName
     }
 
     /** @param text new status text, or null to keep the current one. */

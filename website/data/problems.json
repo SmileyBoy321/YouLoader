@@ -195,6 +195,26 @@
     ]
   },
   {
+    "id": "shazam-unknown-song",
+    "category": "shazam",
+    "summary": "Shazam doesn't know this song link.",
+    "cause": "Shazam didn't return a song for this link. It may have been copied incompletely, or Shazam removed the song.",
+    "suggestions": [
+      "Open the song in Shazam again, tap Share, and copy the link once more.",
+      "Or search for the song on YouTube and download that link instead."
+    ]
+  },
+  {
+    "id": "shazam-unreachable",
+    "category": "shazam",
+    "summary": "Couldn't reach Shazam to look up the song.",
+    "cause": "YouLoader asks Shazam for the song's name before finding it on YouTube, and Shazam didn't answer.",
+    "suggestions": [
+      "Check that you're connected to the internet.",
+      "Click Retry."
+    ]
+  },
+  {
     "id": "engine-did-not-start",
     "category": "app",
     "summary": "The download engine couldn't start.",

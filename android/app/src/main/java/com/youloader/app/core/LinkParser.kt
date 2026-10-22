@@ -3,7 +3,7 @@ package com.youloader.app.core
 import java.net.URI
 import java.net.URLDecoder
 
-/** Port of the Windows app's LinkParser: finds, compares and classifies YouTube links. */
+/** Port of the Windows app's LinkParser: finds, compares and classifies YouTube and Shazam links. */
 object LinkParser {
     private val separators = Regex("""[ \t\r\n,]+""")
 
@@ -43,8 +43,29 @@ object LinkParser {
         return urls.size to urls.size - unique
     }
 
-    /** YouLoader only downloads from YouTube (including YouTube Music and youtu.be short links). */
+    /**
+     * YouLoader downloads from YouTube (including YouTube Music and youtu.be short links), and finds
+     * songs shared from Shazam on YouTube.
+     */
+    fun isSupportedUrl(url: String): Boolean = isYouTubeUrl(url) || shazamTrackId(url) != null
+
     fun isYouTubeUrl(url: String): Boolean = parse(url)?.host?.lowercase()?.let(::isYouTube) ?: false
+
+    /**
+     * The song number in a Shazam link, or null for any other link. Shazam shares
+     * shazam.com/track/843646036/without-me, sometimes with a language in front (shazam.com/en-us/track/…),
+     * and shz.am/t843646036 for short.
+     */
+    fun shazamTrackId(url: String): String? {
+        val uri = parse(url) ?: return null
+        val segments = segments(uri)
+        val id = when (uri.host?.lowercase()) {
+            "shazam.com", "www.shazam.com" -> segments.dropWhile { it != "track" }.getOrNull(1)
+            "shz.am", "www.shz.am" -> segments.singleOrNull()?.takeIf { it.startsWith("t") }?.substring(1)
+            else -> null
+        }
+        return id?.takeIf { it.isNotEmpty() && it.all { c -> c in '0'..'9' } }
+    }
 
     fun isHttpUrl(text: String): Boolean {
         val uri = parse(text) ?: return false
@@ -77,6 +98,7 @@ object LinkParser {
         val trimmed = url.trim()
         val uri = parse(trimmed) ?: return trimmed
         val host = uri.host?.lowercase() ?: return trimmed
+        shazamTrackId(trimmed)?.let { return "shazam:$it" }
 
         if (isYouTube(host)) {
             val segments = segments(uri)

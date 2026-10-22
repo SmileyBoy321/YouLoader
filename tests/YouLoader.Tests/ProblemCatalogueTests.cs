@@ -55,7 +55,7 @@ public class ProblemCatalogueTests
     [Fact]
     public void EveryProblemHasAUniqueAnchorAndAKnownSection()
     {
-        string[] sections = ["video", "youtube", "saving", "converting", "connection", "app"];
+        string[] sections = ["video", "youtube", "saving", "converting", "shazam", "connection", "app"];
         var ids = ErrorMessages.Catalogue.Select(p => p.Id).ToList();
 
         Assert.Equal(ids.Count, ids.Distinct().Count());

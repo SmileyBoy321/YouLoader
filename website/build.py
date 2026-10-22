@@ -138,6 +138,8 @@ PROBLEM_SECTIONS = [
      "The download worked, but Windows wouldn't let YouLoader save it."),
     ("converting", "Converting to MP3 or MP4",
      "YouLoader uses a converter called ffmpeg to turn YouTube's streams into MP3 or MP4 files."),
+    ("shazam", "Shazam links",
+     "A Shazam link names a song but doesn't contain it, so YouLoader asks Shazam which song it is and then finds it on YouTube."),
     ("connection", "Connection problems", ""),
     ("app", "YouLoader itself", ""),
 ]

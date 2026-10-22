@@ -81,6 +81,18 @@ public class IntegrationTests(ToolsFixture fixture, Xunit.Abstractions.ITestOutp
     }
 
     [IntegrationFact]
+    public async Task ShazamLink_IsLookedUpAndFoundOnYouTube()
+    {
+        var item = await DownloadAsync(Item(OutputFormat.Mp3, "192", "https://www.shazam.com/track/843646036/without-me?referrer=share"));
+
+        output.WriteLine(item.TechnicalDetails ?? "");
+        Assert.Equal(DownloadState.Done, item.State);
+        Assert.Equal("Red Village & mikeeysmind – Without Me", item.Title);
+        Assert.EndsWith("Without Me.mp3", item.FilePath);
+        Assert.True(File.Exists(item.FilePath));
+    }
+
+    [IntegrationFact]
     public async Task Mp4_IsSavedAsH264AndAac()
     {
         var item = await DownloadAsync(Item(OutputFormat.Mp4, "1080"));

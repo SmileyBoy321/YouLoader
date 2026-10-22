@@ -167,6 +167,8 @@ public static class ErrorMessages
     public static IReadOnlyList<Problem> Catalogue =>
     [
         .. Known.Select(k => new Problem(k.Id, k.Category, k.Explanation)),
+        new Problem("shazam-unknown-song", "shazam", Shazam.UnknownSong),
+        new Problem("shazam-unreachable", "shazam", Shazam.LookupFailed),
         new Problem("engine-did-not-start", "app", EngineDidNotStart(null)),
     ];
 

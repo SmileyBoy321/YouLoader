@@ -18,6 +18,7 @@ public sealed class DownloadService(ToolManager tools)
     {
         var token = item.Cancellation.Token;
         item.ReportStarting();
+        if (!await LookUpSongAsync(item, token)) return;
 
         for (var attempt = 1; ; attempt++)
         {
@@ -54,6 +55,32 @@ public sealed class DownloadService(ToolManager tools)
         }
 
         HideArchiveFile(item.Request);
+    }
+
+    /// <summary>
+    /// A Shazam link names a song rather than a video, so first ask Shazam which song it is.
+    /// Returns false when the download can't go on (the item is already marked failed or canceled).
+    /// </summary>
+    static async Task<bool> LookUpSongAsync(DownloadItem item, CancellationToken token)
+    {
+        if (item.Song is not null || LinkParser.ShazamTrackId(item.Url) is not { } trackId) return true;
+
+        item.ReportLookingUpSong();
+        try
+        {
+            if (await Shazam.LookUpAsync(trackId, token) is { } song)
+            {
+                item.ReportSong(song);
+                return true;
+            }
+            item.Fail(Shazam.UnknownSong);
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException)
+        {
+            if (token.IsCancellationRequested) item.MarkCanceled();
+            else item.Fail(Shazam.LookupFailed, e.Message);
+        }
+        return false;
     }
 
     /// <summary>Runs yt-dlp once. Returns null when it couldn't even start (the item is already marked failed).</summary>
@@ -111,7 +138,7 @@ public sealed class DownloadService(ToolManager tools)
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
         };
-        foreach (var arg in YtDlpArguments.Build(item.Url, item.Request, tools.FfmpegDir, tools.JsRuntime))
+        foreach (var arg in YtDlpArguments.Build(item.YtDlpTarget, item.Request, tools.FfmpegDir, tools.JsRuntime))
             psi.ArgumentList.Add(arg);
         return psi;
     }
@@ -121,7 +148,8 @@ public sealed class DownloadService(ToolManager tools)
         switch (output)
         {
             case DownloadProgress progress:
-                item.Title = progress.DisplayTitle;
+                // A Shazam song keeps the name Shazam gave it; the YouTube upload's title often leaves out the artist.
+                if (item.Song is null) item.Title = progress.DisplayTitle;
                 var reading = meter.Update(DateTime.UtcNow, progress.DownloadedBytes, progress.TotalBytes);
                 item.ReportDownloading(progress.Percent, reading is null ? null : OutputParser.Describe(progress, item.Request.Format, reading));
                 break;

@@ -12,6 +12,7 @@ import com.youloader.app.core.LinkParser
 import com.youloader.app.core.OutputParser
 import com.youloader.app.core.ProcessingStep
 import com.youloader.app.core.QueueOrder
+import com.youloader.app.core.Shazam
 import com.youloader.app.core.TechnicalLog
 import com.youloader.app.core.TransferMeter
 import com.youloader.app.core.YtDlpArguments
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -57,15 +59,15 @@ object DownloadQueue {
 
     fun hasActive(): Boolean = synchronized(items) { items.any { it.isActive } }
 
-    data class AddResult(val added: Int, val alreadyListed: List<ItemSnapshot>, val notYouTube: List<String>)
+    data class AddResult(val added: Int, val alreadyListed: List<ItemSnapshot>, val unsupported: List<String>)
 
-    /** Adds every YouTube link in [urls] that isn't already downloading or done in the same format. */
+    /** Adds every YouTube and Shazam link in [urls] that isn't already downloading or done in the same format. */
     fun add(urls: List<String>, request: DownloadRequest): AddResult {
-        val notYouTube = urls.filterNot(LinkParser::isYouTubeUrl)
+        val unsupported = urls.filterNot(LinkParser::isSupportedUrl)
         val alreadyListed = mutableListOf<DownloadItem>()
         var added = 0
         synchronized(items) {
-            for (url in urls - notYouTube.toSet()) {
+            for (url in urls - unsupported.toSet()) {
                 val item = DownloadItem(nextId.getAndIncrement(), url, request)
                 // The same video in the same format is already downloading or done: point at it instead of adding a copy.
                 val existing = items.firstOrNull { it.key == item.key && (it.isActive || it.isDone) }
@@ -80,7 +82,7 @@ object DownloadQueue {
         }
         changed()
         if (added > 0) DownloadService.start(app)
-        return AddResult(added, alreadyListed.map { it.snapshot() }, notYouTube)
+        return AddResult(added, alreadyListed.map { it.snapshot() }, unsupported)
     }
 
     fun cancel(id: Long) {
@@ -144,6 +146,7 @@ object DownloadQueue {
     private suspend fun run(item: DownloadItem) {
         item.reportStarting()
         changed()
+        if (!lookUpSong(item)) return
 
         var attempt = 1
         while (true) {
@@ -176,6 +179,31 @@ object DownloadQueue {
         }
     }
 
+    /**
+     * A Shazam link names a song rather than a video, so first ask Shazam which song it is.
+     * Returns false when the download can't go on (the item is already marked failed or canceled).
+     */
+    private fun lookUpSong(item: DownloadItem): Boolean {
+        if (item.song != null) return true
+        val trackId = LinkParser.shazamTrackId(item.url) ?: return true
+
+        item.reportLookingUpSong()
+        changed()
+        try {
+            val song = Shazam.lookUp(trackId)
+            if (item.cancelRequested) item.markCanceled()
+            else if (song == null) item.fail(Shazam.unknownSong)
+            else {
+                item.reportSong(song)
+                changed()
+                return true
+            }
+        } catch (e: IOException) {
+            if (item.cancelRequested) item.markCanceled() else item.fail(Shazam.lookupFailed, e.toString())
+        }
+        return false
+    }
+
     private fun runOnce(item: DownloadItem): Pair<Engine.RunResult, List<String>> {
         val workDir = File(app.cacheDir, "work/${item.id}").apply {
             deleteRecursively()
@@ -187,14 +215,15 @@ object DownloadQueue {
         val log = TechnicalLog()
         val meter = TransferMeter()
         var lastUiUpdate = 0L
-        val args = YtDlpArguments.build(item.url, item.request, workDir.absolutePath, archive.absolutePath)
+        val args = YtDlpArguments.build(item.ytDlpTarget, item.request, workDir.absolutePath, archive.absolutePath)
         val isCollection = LinkParser.isCollection(item.url, item.request.wholePlaylist)
 
-        val result = Engine.run(item.url, args, processId(item)) { line ->
+        val result = Engine.run(item.ytDlpTarget, args, processId(item)) { line ->
             val event = OutputParser.parse(line)
             when (event) {
                 is DownloadProgress -> {
-                    item.title = event.displayTitle
+                    // A Shazam song keeps the name Shazam gave it; the YouTube upload's title often leaves out the artist.
+                    if (item.song == null) item.title = event.displayTitle
                     val reading = meter.update(System.currentTimeMillis(), event.downloadedBytes, event.totalBytes)
                     item.reportDownloading(event.percent, reading?.let { OutputParser.describe(event, item.request.format, it) })
                 }

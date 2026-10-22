@@ -6,7 +6,7 @@
 
 ### Downloads. Nothing else.
 
-A free, open-source YouTube downloader for Windows and Android.<br>
+A free, open-source YouTube downloader for Windows and Android. It downloads Shazam songs too.<br>
 MP3 and MP4, with **no ads, no pop-ups, no sign-up and no tracking**.
 
 [![Latest release](https://img.shields.io/github/v/release/SmileyBoy321/YouLoader?style=flat-square&label=release&color=d43127)](https://github.com/SmileyBoy321/YouLoader/releases/latest)
@@ -61,8 +61,9 @@ It follows the example of [VLC](https://www.videolan.org/): **free forever, no a
 
 - 🎵 **MP3 up to 320 kbps**, with the song title, artist and square cover art filled in.
 - 🎬 **MP4 from 480p up to 4K and 8K.** 1080p and below use H.264, which plays on every phone, TV and editor.
+- 🎧 **Shazam links work too.** Share a song from Shazam (or paste its link) and YouLoader finds it on YouTube and saves it like any other link.
 - 📚 **Playlists and channels** download into their own numbered folder. Paste the same link later and only new videos are fetched.
-- 📋 **Paste many links at once.** A freshly copied YouTube link appears in the box by itself, and duplicates are skipped however the link is written.
+- 📋 **Paste many links at once.** A freshly copied YouTube or Shazam link appears in the box by itself, and duplicates are skipped however the link is written.
 - 📊 **Calm, honest progress.** Speed and time left are averaged so they count down smoothly, and whatever is downloading right now stays at the top.
 - 💬 **Errors in plain English.** Every failed download has a **Why?** button that explains what happened and what to try, from “the file is open in another program” to “this video is private”.
 - 🔄 **Keeps working when YouTube changes.** The download engine, [yt-dlp](https://github.com/yt-dlp/yt-dlp), updates itself once a day, and short hiccups are retried automatically.
@@ -72,7 +73,7 @@ It follows the example of [VLC](https://www.videolan.org/): **free forever, no a
 ## Quick start
 
 1. **[Download YouLoader.exe](https://github.com/SmileyBoy321/YouLoader/releases/latest/download/YouLoader.exe)** and open it. Nothing to install.
-2. **Copy a YouTube link.** It appears in YouLoader by itself when you switch back, or use **Paste**.
+2. **Copy a YouTube or Shazam link.** It appears in YouLoader by itself when you switch back, or use **Paste**.
 3. **Pick MP3 or MP4 and press Enter.** Files are saved in `Downloads\YouLoader` (change it with **Change…**).
 
 > [!NOTE]
@@ -88,6 +89,7 @@ YouLoader for Android does the same job with the same rules: MP3 and MP4, playli
 1. **On your phone, [download YouLoader.apk](https://github.com/SmileyBoy321/YouLoader/releases/latest/download/YouLoader.apk)** and open it.
 2. Android asks whether your browser may install apps. Allow it, then tap **Install**.
 3. **In the YouTube app, tap Share → YouLoader.** The link lands in the box; pick MP3 or MP4 and tap **Download**. Copying a link and then opening YouLoader works too.
+4. **Heard a song on the radio?** Recognise it in Shazam, then tap **Share → YouLoader** there. YouLoader finds the song on YouTube and downloads it.
 
 Files are saved in **Download/YouLoader** (playlists in their own folder inside it), where your music player, gallery and file manager can see them. Downloads keep going in the background with a progress notification, and you get a notification when they're done.
 
@@ -201,9 +203,9 @@ You can also run `YouLoader.exe --uninstall` from a terminal or a shortcut.
 ## Privacy
 
 - **No accounts, no analytics, no telemetry, no crash reporting.** Nothing about you or your downloads is ever sent anywhere.
-- YouLoader connects only to **YouTube** (to download what you ask for) and **GitHub** (to fetch its helper tools, update yt-dlp, and check for a new YouLoader version).
+- YouLoader connects only to **YouTube** (to download what you ask for), **GitHub** (to fetch its helper tools, update yt-dlp, and check for a new YouLoader version) and, when you download a Shazam link, **Shazam** (to look up which song the link names; only the song number from the link is sent).
 - Settings live in `%AppData%\YouLoader\settings.json` on your PC. **Uninstall…** removes every trace.
-- The Android app works the same way: no accounts or analytics, and it only connects to YouTube and GitHub. Its settings stay inside the app and are removed when you uninstall it.
+- The Android app works the same way: no accounts or analytics, and it only connects to YouTube, GitHub and, for Shazam links, Shazam. Its settings stay inside the app and are removed when you uninstall it.
 
 > [!IMPORTANT]
 > **Please download responsibly.** Only download videos you own, videos that are openly licensed (for example Creative Commons or public domain), or videos you have permission to download. Respect creators and YouTube's terms of service.

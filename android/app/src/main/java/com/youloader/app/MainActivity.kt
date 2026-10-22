@@ -168,13 +168,13 @@ class MainActivity : AppCompatActivity(), ItemAdapter.Actions {
 
     // ---- Getting links in ----
 
-    /** "Share → YouLoader" from the YouTube app sends "Title https://youtu.be/…". */
+    /** "Share → YouLoader" from the YouTube app sends "Title https://youtu.be/…", and Shazam sends a sentence ending in its link. */
     private fun handleShare(intent: Intent?) {
         if (intent?.action != Intent.ACTION_SEND) return
         val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return
         intent.action = null // Don't add it again when the screen is recreated.
         if (LinkParser.extractUrls(text).isEmpty()) {
-            showNotice("That didn't include a link. Share a video from the YouTube app, or copy its link.")
+            showNotice("That didn't include a link. Share a video from the YouTube app or a song from Shazam, or copy its link.")
             return
         }
         insertLinks(text)
@@ -201,14 +201,14 @@ class MainActivity : AppCompatActivity(), ItemAdapter.Actions {
         }
     }
 
-    // Saves a tap: a freshly copied YouTube link is waiting in the box when you switch back.
+    // Saves a tap: a freshly copied YouTube or Shazam link is waiting in the box when you switch back.
     // A newly copied link replaces one YouLoader pasted itself, but never overwrites what the user typed:
     // then it's added on a new line instead, so copying links one after another builds a list.
     private fun autoPasteFromClipboard() {
         val text = clipboardText()?.trim() ?: return
         if (text == settings.lastClipboardLink || text.length > 2000) return
         val urls = LinkParser.extractUrls(text)
-        if (urls.isEmpty() || !urls.all(LinkParser::isYouTubeUrl)) return
+        if (urls.isEmpty() || !urls.all(LinkParser::isSupportedUrl)) return
         settings.lastClipboardLink = text
 
         if (boxText().isEmpty() || boxText() == autoPastedText) {
@@ -245,7 +245,7 @@ class MainActivity : AppCompatActivity(), ItemAdapter.Actions {
     private fun startDownloads() {
         val urls = LinkParser.extractUrls(boxText())
         if (urls.isEmpty()) {
-            showNotice("Paste at least one YouTube link that starts with https://")
+            showNotice("Paste at least one YouTube or Shazam link that starts with https://")
             return
         }
         askForNotifications()
@@ -261,9 +261,9 @@ class MainActivity : AppCompatActivity(), ItemAdapter.Actions {
         autoPastedText = null
 
         val notes = mutableListOf<String>()
-        if (result.notYouTube.isNotEmpty()) {
-            notes += if (result.notYouTube.size == 1) "YouLoader only downloads from YouTube, so the ${hostOf(result.notYouTube[0])} link was skipped."
-            else "YouLoader only downloads from YouTube, so ${result.notYouTube.size} other links were skipped."
+        if (result.unsupported.isNotEmpty()) {
+            notes += if (result.unsupported.size == 1) "YouLoader only downloads YouTube and Shazam links, so the ${hostOf(result.unsupported[0])} link was skipped."
+            else "YouLoader only downloads YouTube and Shazam links, so ${result.unsupported.size} other links were skipped."
         }
         val listed = result.alreadyListed
         if (listed.isNotEmpty()) {

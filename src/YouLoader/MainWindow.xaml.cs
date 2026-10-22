@@ -279,7 +279,7 @@ public partial class MainWindow : Window
         UrlBox.Focus();
     }
 
-    // Saves a click: a freshly copied YouTube link is waiting in the box when you switch back.
+    // Saves a click: a freshly copied YouTube or Shazam link is waiting in the box when you switch back.
     // A newly copied link replaces one YouLoader pasted itself, but never overwrites what the user typed:
     // then it's added on a new line instead, so copying links one after another builds a list.
     void AutoPasteFromClipboard()
@@ -290,7 +290,7 @@ public partial class MainWindow : Window
             var text = Clipboard.GetText().Trim();
             if (text == lastClipboardLink || text.Length > 2000) return;
             var urls = LinkParser.ExtractUrls(text);
-            if (urls.Count == 0 || !urls.All(LinkParser.IsYouTubeUrl)) return;
+            if (urls.Count == 0 || !urls.All(LinkParser.IsSupportedUrl)) return;
             lastClipboardLink = text;
 
             if (UrlBox.Text.Length == 0 || UrlBox.Text == autoPastedText)
@@ -338,9 +338,9 @@ public partial class MainWindow : Window
             settings.OutputDir);
 
         List<DownloadItem> alreadyListed = [];
-        var notYouTube = urls.Where(u => !LinkParser.IsYouTubeUrl(u)).ToList();
+        var unsupported = urls.Where(u => !LinkParser.IsSupportedUrl(u)).ToList();
         var added = 0;
-        foreach (var url in urls.Except(notYouTube))
+        foreach (var url in urls.Except(unsupported))
         {
             var item = new DownloadItem(url, request);
 
@@ -367,11 +367,11 @@ public partial class MainWindow : Window
         SaveSettings();
 
         List<string> notes = [];
-        if (notYouTube.Count > 0)
+        if (unsupported.Count > 0)
         {
-            notes.Add(notYouTube.Count == 1
-                ? $"YouLoader only downloads from YouTube, so the {HostOf(notYouTube[0])} link was skipped."
-                : $"YouLoader only downloads from YouTube, so {notYouTube.Count} other links were skipped.");
+            notes.Add(unsupported.Count == 1
+                ? $"YouLoader only downloads YouTube and Shazam links, so the {HostOf(unsupported[0])} link was skipped."
+                : $"YouLoader only downloads YouTube and Shazam links, so {unsupported.Count} other links were skipped.");
         }
         if (alreadyListed.Count > 0)
         {
